@@ -1,0 +1,5 @@
+[19-Jan-2024 08:26:20 Asia/Manila] PHP Fatal error:  Uncaught Error: Call to undefined method PDOStatement::close() in /home/u260564888/domains/jgcintegratedsystems.com/public_html/models/dtr.model.php:497
+Stack trace:
+#0 /home/u260564888/domains/jgcintegratedsystems.com/public_html/views/modules/autoupload.php(68): ModelDTR::mdlAddBranchDailyDTRUploadAPI()
+#1 {main}
+  thrown in /home/u260564888/domains/jgcintegratedsystems.com/public_html/models/dtr.model.php on line 497

@@ -1,0 +1,36 @@
+.btnCategory{
+    display: flex;
+    min-width: 8rem;
+    color: #fff;
+    background-color: rgba(255, 255, 255, .125);
+    border-color: rgba(255, 255, 255, .125);
+    font-size: .70rem;
+    font-weight: 500;
+    letter-spacing: 1px;
+    padding: 3px 5px;
+    border-radius: .25rem;
+    text-transform: uppercase;
+    box-shadow: 0 .125rem .25rem rgba(0, 0, 0, .075);
+    justify-content: center;
+    gap: 1rem;
+    align-content: center;
+    align-items: center
+}
+
+.btnCategory.active-category {
+    background-color: #23864e;
+  }
+  .colCategory{
+    display: flex;
+    gap: 1rem;
+  }
+
+  .BtnText{
+        color: white;
+        background-color: red;
+        border-radius: 99999px;
+        font-weight: bold;
+        font-size: .8rem;
+        padding: .2rem .5rem;
+  }
+

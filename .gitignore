@@ -1,0 +1,8 @@
+views/files/
+views/img/
+backups/
+*.zip
+*.pdf
+*.rar
+*.7z
+*.mp4
