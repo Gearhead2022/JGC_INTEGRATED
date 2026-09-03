@@ -70,9 +70,11 @@ public function getClientsPrinting(){
     if ($branch_name === 'EMB') {
         $branch_name_report = 'EMB CAPITAL LENDING CORPORATION';
     } elseif($branch_name === 'FCHN') {
-        $branch_name_report = 'FCH FINANCE CORPORATION - VISAYAS';
+        $branch_name_report = 'FCH FINANCE CORPORATION - NEGROS';
     } elseif($branch_name === 'FCHM') {
         $branch_name_report = 'FCH FINANCE CORPORATION - MANILA';
+    } elseif($branch_name === 'FCHA') {
+        $branch_name_report = 'FCH FINANCE CORPORATION - ANTIPOLO';
     } elseif($branch_name === 'RLC') {
         $branch_name_report = 'RAMSGATE LENDING CORPORATION';
     } elseif($branch_name === 'ELC') {
@@ -273,9 +275,12 @@ EOF;
             $data = (new ControllerPastdue)->ctrPastDueSummaryFCHNegross();
         } elseif ($branch_name_input === 'FCHM') {
             $data = (new ControllerPastdue)->ctrPastDueSummaryFCHManilas();
+        } elseif ($branch_name_input === 'FCHA') {
+            $data = (new ControllerPastdue)->ctrPastDueSummaryFCHAntipolos();
         } else{
             $data = (new ControllerPastdue)->ctrPastDueSummarys($branch_name_input);
         }
+
 
     $grand_total = 0;
     $formatted_preBal1 = 0;

@@ -297,55 +297,52 @@ class ModelBackup{
 	}
 
 	/* admin  backup */    
-    static public function mdlMonthBackup($date_from, $date_to){
-        
-        $stmt = (new Connection)->connect()->prepare("SELECT a.full_name, 
-            (SELECT COUNT(b.branch_name)
-            FROM backup b 
-            WHERE a.user_id = b.user_id 
-            AND b.date_time >= CAST(:date_from AS DATETIME)
-            AND b.date_time < CAST(DATE_ADD(:date_to, INTERVAL 1 DAY) AS DATETIME)
-            ) as count
-        FROM accounts a
-        WHERE a.full_name LIKE 'EMB%' OR a.full_name LIKE 'FCH%' OR a.full_name LIKE 'RLC%' OR a.full_name LIKE 'ELC%'
-        ORDER BY count DESC");
+	static public function mdlMonthBackup($date_from, $date_to){
+		
+		$stmt = (new Connection)->connect()->prepare("SELECT a.full_name, 
+			(SELECT COUNT(b.branch_name)
+			FROM backup b 
+			WHERE a.user_id = b.user_id 
+			AND b.date_time >= CAST(:date_from AS DATETIME)
+			AND b.date_time < CAST(DATE_ADD(:date_to, INTERVAL 1 DAY) AS DATETIME)
+			) as count
+		FROM accounts a
+		WHERE a.full_name LIKE 'EMB%' OR a.full_name LIKE 'FCH%' OR a.full_name LIKE 'RLC%' OR a.full_name LIKE 'ELC%'
+		ORDER BY count DESC");
 
-        $stmt->bindParam(':date_from', $date_from);
-        $stmt->bindParam(':date_to', $date_to);
-    
-        $stmt->execute();
-        return $stmt->fetchAll();
-        
-    }
+		$stmt->bindParam(':date_from', $date_from);
+		$stmt->bindParam(':date_to', $date_to);
+	
+		$stmt->execute();
+		return $stmt->fetchAll();
+		
+	}
 
-    static public function mdlGetMonthBackupAll($date_from, $date_to){
-        $stmt = (new Connection)->connect()->prepare("SELECT a.full_name, b.user_id, b.backup_id, b.id FROM 
-        `accounts` a RIGHT JOIN `backup` b ON a.user_id = b.user_id WHERE b.date_time >= CAST(:date_from AS DATETIME)
-            AND b.date_time < CAST(DATE_ADD(:date_to, INTERVAL 1 DAY) AS DATETIME)
-            AND (a.full_name LIKE 'EMB%' OR a.full_name LIKE 'FCH%' OR a.full_name LIKE 'RLC%' OR a.full_name LIKE 'ELC%')");
+	static public function mdlGetMonthBackupAll($date_from, $date_to){
+		$stmt = (new Connection)->connect()->prepare("SELECT a.full_name, b.user_id, b.backup_id, b.id FROM 
+		`accounts` a RIGHT JOIN `backup` b ON a.user_id = b.user_id WHERE b.date_time >= CAST(:date_from AS DATETIME)
+			AND b.date_time < CAST(DATE_ADD(:date_to, INTERVAL 1 DAY) AS DATETIME)
+			AND (a.full_name LIKE 'EMB%' OR a.full_name LIKE 'FCH%' OR a.full_name LIKE 'RLC%' OR a.full_name LIKE 'ELC%')");
 
-        $stmt->bindParam(':date_from', $date_from);
-        $stmt->bindParam(':date_to', $date_to);
+		$stmt->bindParam(':date_from', $date_from);
+		$stmt->bindParam(':date_to', $date_to);
 
-        $stmt->execute();
-        return $stmt->fetchAll();
-    }
+		$stmt->execute();
+		return $stmt->fetchAll();
+	}
 
-    static public function mdlDeleteAllBackupFiles($table_backup_files, $backup_id){
-        $stmt = (new Connection)->connect()->prepare("DELETE FROM $table_backup_files WHERE backup_id =:backup_id");
-    
-        $stmt -> bindParam(":backup_id", $backup_id, PDO::PARAM_STR);
-        if($stmt -> execute()){
-            return "ok";
-        }else{
-            return "error"; 
-        }
-        $stmt -> close();
-        $stmt = null;
-    }
-
-
-
+	static public function mdlDeleteAllBackupFiles($table_backup_files, $backup_id){
+		$stmt = (new Connection)->connect()->prepare("DELETE FROM $table_backup_files WHERE backup_id =:backup_id");
+	
+		$stmt -> bindParam(":backup_id", $backup_id, PDO::PARAM_STR);
+		if($stmt -> execute()){
+			return "ok";
+		}else{
+			return "error";	
+		}
+		$stmt -> close();
+		$stmt = null;
+	}
 
 
 }

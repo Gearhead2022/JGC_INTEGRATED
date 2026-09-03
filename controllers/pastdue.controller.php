@@ -1023,6 +1023,11 @@ class ControllerPastdue{
 		return $answer;
 	}
 
+	static public function ctrPastDueSummaryFCHAntipolo($selectedbranch_name,$dateFromMonth,$dateStart){
+		$answer = (new ModelPastDue)->mdlPastDueSummaryFCHAntipolo($selectedbranch_name, $dateFromMonth,$dateStart);
+		return $answer;
+	}
+
 	//past due account summary yearly
 
 	static public function ctrPastDueSummarys($branch_name_input){
@@ -1032,6 +1037,11 @@ class ControllerPastdue{
 
 	static public function ctrPastDueSummaryFCHManilas(){
 		$answer = (new ModelPastDue)->mdlPastDueSummaryFCHManilas();
+		return $answer;
+	}
+
+	static public function ctrPastDueSummaryFCHAntipolos(){
+		$answer = (new ModelPastDue)->mdlPastDueSummaryFCHAntipolos();
 		return $answer;
 	}
 
@@ -1112,7 +1122,10 @@ class ControllerPastdue{
 	}
 
 
-
+	static public function ctrShowFCHABranches(){
+		$answer = (new ModelPastDue)->mdlShowFCHABranches();
+		return $answer;
+	}
 
     
 }

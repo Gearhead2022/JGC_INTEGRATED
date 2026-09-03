@@ -6,3 +6,9 @@
 [15-Feb-2025 12:48:34 Asia/Manila] PHP Warning:  chmod(): Operation not permitted in /var/www/php/JGC_APP_FINAL/models/account.model.php on line 15
 [15-Feb-2025 12:48:41 Asia/Manila] PHP Warning:  chmod(): Operation not permitted in /var/www/php/JGC_APP_FINAL/models/account.model.php on line 15
 [15-Feb-2025 12:50:34 Asia/Manila] PHP Warning:  chmod(): Operation not permitted in /var/www/php/JGC_APP_FINAL/models/account.model.php on line 15
+[27-Apr-2026 13:41:49 Asia/Manila] PHP Warning:  chmod(): Operation not permitted in /var/www/php/JGC_APP_FINAL/controllers/soa.controller.php on line 15
+[27-Apr-2026 13:42:39 Asia/Manila] PHP Warning:  chmod(): Operation not permitted in /var/www/php/JGC_APP_FINAL/controllers/soa.controller.php on line 15
+[27-Apr-2026 13:46:31 Asia/Manila] PHP Warning:  chmod(): Operation not permitted in /var/www/php/JGC_APP_FINAL/controllers/soa.controller.php on line 15
+[27-Apr-2026 13:46:31 Asia/Manila] SOA Insert Failed: error
+[27-Apr-2026 13:47:06 Asia/Manila] PHP Warning:  chmod(): Operation not permitted in /var/www/php/JGC_APP_FINAL/controllers/soa.controller.php on line 15
+[27-Apr-2026 13:47:06 Asia/Manila] SOA Insert Failed: error

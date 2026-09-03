@@ -94,6 +94,8 @@ class printClientList{
           $data = (new ControllerPastdue)->ctrPastDueSummaryFCHNegros($branch_name_input,$dateFromMonth,$dateStart);
       } elseif ($branch_name_input === 'FCHM') {
           $data = (new ControllerPastdue)->ctrPastDueSummaryFCHManila($branch_name_input, $dateFromMonth,$dateStart );
+        } elseif ($branch_name_input === 'FCHA') {
+          $data = (new ControllerPastdue)->ctrPastDueSummaryFCHAntipolo($branch_name_input, $dateFromMonth,$dateStart );
       } else{
         $data = (new ControllerPastdue)->ctrBadAccounts($branch_name_input,$dateFromMonth,$dateStart);
       } 
@@ -102,16 +104,16 @@ class printClientList{
       if($branch_name_input === "EMB"){
         $tilteHead = "EMB CAPITAL LENDING CORPORATION";
       }elseif($branch_name_input === "FCHN"){
-        $tilteHead = "FCH FINANCE CORPORATION - VISAYAS";
+        $tilteHead = "FCH FINANCE CORPORATION - NEGROS";
       }elseif($branch_name_input === "FCHM"){
         $tilteHead = "FCH FINANCE CORPORATION - MANILA";
+      }elseif($branch_name_input === "FCHA"){
+        $tilteHead = "FCH FINANCE CORPORATION - ANTIPOLO";
       }elseif($branch_name_input === "RLC"){
-        $tilteHead = "RAMSGATE FINANCE CORPORATION";
+        $tilteHead = "RAMSGATE LENDING CORPORATION";
       }elseif($branch_name_input === "ELC"){
         $tilteHead = "EVERYDAY LENDING CORPORATION";
       }
-
-
 
     $dateObject = new DateTime($dateFrom);
     $month = $dateObject->format('F'); 

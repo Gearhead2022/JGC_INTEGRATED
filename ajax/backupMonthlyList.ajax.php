@@ -14,8 +14,9 @@ if(isset($_GET['action']) && $_GET['action'] == "list_all"){
 class backupTable{
 	
 	public function showMonthlyBackupTable(){
-        $backup_month = $_GET['backup_month'];
-        $data = (new ControllerBackup)->ctrMonthBackup($backup_month);
+        $date_start = $_GET['date_start'];
+        $date_end = $_GET['date_end'];
+        $data = (new ControllerBackup)->ctrMonthBackup($date_start, $date_end);
         
     // print_r($BNKCHCK);
     if(empty($data)){
@@ -31,7 +32,8 @@ class backupTable{
                         
                         "'.$data[$i]["full_name"].'",
                         "'.$data[$i]["count"].'",
-                        "'.date('F Y', strtotime($backup_month)).'"
+                        "'.date('F Y', strtotime($date_start)).'",
+                        "'.date('M j D', strtotime($date_start))." - ". date('M j D', strtotime($date_end)).'"
                     ],';
                 }
                 $jsonData = substr($jsonData, 0, -1);
@@ -41,8 +43,9 @@ class backupTable{
 	}
 
     public function deleteMonthlyBackupTable(){
-        $backup_month = $_GET['backup_month'];
-        $data_delete = (new ControllerBackup)->ctrDeleteMonthBackupAll($backup_month);
+        $date_start = $_GET['date_start'];
+        $date_end = $_GET['date_end'];
+        $data_delete = (new ControllerBackup)->ctrDeleteMonthBackupAll($date_start, $date_end);
         
         if ($data_delete) {
             echo 'ok';

@@ -63,7 +63,7 @@ class ControllerPermits{
 		 }else{
 			$type = "PSPMI";
 		 }
-		 if($wp_from == 4 || $wp_from == 8 || $wp_from == 7  || $type === 'PSPMI'){
+		 if($wp_from == 4 || $wp_from == 8 || $wp_from == 7  || $wp_from == 10 || $wp_from == 11  || $type === 'PSPMI'){
 			$request_level = "2";
 		 }else{
 			$request_level = $_POST['request_level'];
@@ -176,7 +176,7 @@ class ControllerPermits{
 		$wp_chk_by =nl2br($wp_chk_by1);
 
 		$wp_from = $_POST['wp_from'];
-		if($wp_from == 4 || $wp_from == 8){
+		if($wp_from == 4 || $wp_from == 8 || $wp_from == 10 || $wp_from == 11){
 		   $request_level = "2";
 		}else{
 		   $request_level = $_POST['request_level'];

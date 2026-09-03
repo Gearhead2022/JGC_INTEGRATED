@@ -436,91 +436,105 @@ $('.receiveAllFiles').click(function(){
 
 // ADMIN JS //
 
-$(".generateBackupMonthlyList").on("click", function(){
-    
-  var backup_month = document.getElementById('backup_month').value;
+const formatter = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric'
+});
 
-  if(backup_month !=""){
-    swal({
-      title: "Generating",
-      text: "Please wait...",
-      allowOutsideClick: false,
-      allowEscapeKey: false,
-      onOpen: () => {
-        swal.showLoading();
-      }
+
+$(".generateBackupMonthlyList").on("click", function(){
+
+var date_start = document.getElementById('date_start').value;
+var date_end = document.getElementById('date_end').value;
+var deleteBtn = document.getElementById('deleteBackupMonthlyList');
+
+deleteBtn.removeAttribute('disabled');
+
+if(date_start != "" || date_end != ""){
+  swal({
+    title: "Generating",
+    text: "Please wait...",
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    onOpen: () => {
+      swal.showLoading();
+    }
+  });
+
+  var table = $('.backupMonthlyDataList').DataTable();
+  table.clear().draw();
+
+     $.ajax({
+        url: 'ajax/backupMonthlyList.ajax.php',
+        type: 'GET', 
+        data: {
+          date_start: date_start, date_end: date_end, action: 'list_all'
+        },
+        dataType: 'json',
+        success: function(data) {
+          swal.close();
+          // console.log(data);
+          if (data.data.length > 0) {
+            // Add new data to the table
+            table.rows.add(data.data).draw();
+          } else {
+              // Show a message or handle empty data as needed
+              swal({
+                  type: "warning",
+                  title: 'No Records Found in Month. Date from<u> ' + formatter.format(date_start) + ' to ' + formatter.format(date_end) +'</u>',
+                  showCancelButton: true,
+                  confirmButtonColor: '#3085d6',
+                  cancelButtonColor: '#d33',
+                  cancelButtonText: 'cancel',
+                  confirmButtonText: 'OK'
+                }).then(function(result){
+                  if (result.value) {}
+                });
+          }
+        },
+        error: function() {
+          swal.close();
+          swal({
+              type: "warning",
+               title: 'No Records Found in Month. Date from<u> ' + formatter.format(date_start) + ' to ' + formatter.format(date_end) +'</u>',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              cancelButtonText: 'cancel',
+              confirmButtonText: 'OK'
+            });
+        }
     });
 
-    var table = $('.backupMonthlyDataList').DataTable();
-    table.clear().draw();
-
-       $.ajax({
-          url: 'ajax/backupMonthlyList.ajax.php',
-          type: 'GET', 
-          data: {
-            backup_month: backup_month, action: 'list_all'
-          },
-          dataType: 'json',
-          success: function(data) {
-            swal.close();
-            // console.log(data);
-            if (data.data.length > 0) {
-              // Add new data to the table
-              table.rows.add(data.data).draw();
-            } else {
-                // Show a message or handle empty data as needed
-                swal({
-                    type: "warning",
-                    title: 'No Records Found in Month. Date<u> ' + backup_month +'</u>',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    cancelButtonText: 'cancel',
-                    confirmButtonText: 'OK'
-                  }).then(function(result){
-                    if (result.value) {}
-                  });
-            }
-          },
-          error: function() {
-            swal.close();
-            swal({
-                type: "warning",
-                title: 'No Records Found in Month. Date<u> ' + backup_month +'</u>',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                cancelButtonText: 'cancel',
-                confirmButtonText: 'OK'
-              });
-          }
-      });
-
-  }else{
-    swal.close();
-    swal({
-        type: "warning",
-        title: 'Please select a month first!.',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        cancelButtonText: 'cancel',
-        confirmButtonText: 'OK'
-      });
-  }
-    
+}else{
+  swal.close();
+  swal({
+      type: "warning",
+      title: 'Please select a month first!.',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      cancelButtonText: 'cancel',
+      confirmButtonText: 'OK'
+    });
+}
+  
 })
 
 $(".deleteBackupMonthlyList").on("click", function() {
-var backup_month = document.getElementById('backup_month').value;
+var date_start = document.getElementById('date_start').value;
+var date_end = document.getElementById('date_end').value;
 
-let date = new Date(backup_month);
-let monthName = date.toLocaleDateString('en-US', { month: 'long' });
+let dateNameFrom = new Date(date_start);
+let dateNameTo = new Date(date_end);
+let monthNameFrom = dateNameFrom.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+let monthNameTo = dateNameTo.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
 
-if (backup_month != "") {
+if (date_start != "" || date_end != "") {
     swal({
         title: 'Do you want to continue?',
-        text:'Delete all backup for the month of ' + monthName,
+        text:'Delete all backup from' + monthNameFrom + ' to ' + monthNameTo,
         type: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
@@ -529,15 +543,25 @@ if (backup_month != "") {
         confirmButtonText: 'Yes'
     }).then(function(result) {
         if (result.value) {
+          swal({
+            title: "Processing",
+            text: "Please wait...",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            onOpen: () => {
+              swal.showLoading();
+            }
+          });
             $.ajax({
                 url: 'ajax/backupMonthlyList.ajax.php',
                 type: 'GET',
                 data: {
-                    backup_month: backup_month,
+                    date_start: date_start,
+                    date_end: date_end,
                     action: 'delete_all'
                 },
                 success: function(data) {
-                    // console.log(data);
+                    swal.close();
                     if (data === 'ok') {
                         swal({
                             type: "success",
@@ -552,7 +576,7 @@ if (backup_month != "") {
                     } else {
                         swal({
                             type: "error",
-                            title: "No backups found for the specified month.",
+                            title: "No backups found for the specified month & week.",
                             showConfirmButton: true,
                             confirmButtonText: "Close"
                         }).then(function(result) {
@@ -563,6 +587,7 @@ if (backup_month != "") {
                     }
                 },
                 error: function() {
+                    swal.close();
                     swal({
                         type: "error",
                         title: 'An error occurred while processing your request. Please try again later.',
@@ -576,7 +601,7 @@ if (backup_month != "") {
 } else {
     swal({
         type: "warning",
-        title: 'Please select a month first!',
+        title: 'Please select a month & week first!',
         showConfirmButton: true,
         confirmButtonText: 'OK'
     });

@@ -4,51 +4,6 @@ require_once "../../../models/connection.php";
 require_once "../../../views/modules/session.php";
 require_once "../../../controllers/pastdue.controller.php";
 require_once "../../../models/pastdue.model.php";
-require_once('tcpdf_include.php');
-$reportID= (new Connection)->connect()->query("SELECT * from report_logs ORDER BY id Desc limit 1")->fetch(PDO::FETCH_ASSOC);
-if(empty($reportID)){
-$id = 0;
-}else{
-$id = $reportID['id'];
-}
-
-$last_id = $id + 1;
-
-$print_id = "PR" . str_repeat("0",5-strlen($last_id)).$last_id;     
-$report_type = "PAST DUE PERFORMANCE SUMMARY";
-global $print_id;
-
-
-$pastdue = new ControllerPastdue();
-$pastdue->ctrAddReportSequence($print_id, $report_type);
-
-class MYPDF extends TCPDF { 
-    public function Footer() {
-        date_default_timezone_set('Asia/Manila');
-        $currentTimestamp = time();
-        $formattedDateTime = date("Y-m-d H:i:s", $currentTimestamp);
-        // Position at 15 mm from bottom
-        $this->SetY(-15);
-        // Set font
-        $this->SetFont('helvetica', 'I', 8);
-        // Add a full line
-        $this->SetTextColor(128, 128, 128); // Grey color
-        $this->Line($this->getMargins()['left'], $this->GetY(), $this->getPageWidth() - $this->getMargins()['right'], $this->GetY());
-        // System generated report text
-        $this->Cell(0, 2, 'This is a system generated report.', 0, false, 'L', 0, '', 1, false, 'T', 'M');
-        // Move to the next line
-        $this->Ln();
-        // Transaction Number text
-        $this->Cell(0, 2, 'Transaction #: '.$GLOBALS['print_id'], 0, false, 'L', 0, '', 1, false, 'T', 'M');
-        $this->Ln();
-        // Current date and time
-        $this->Cell(0, 2, $formattedDateTime, 0, false, 'L', 0, '', 1, false, 'T', 'M');
-        // Move to the left side
-        $this->SetX($this->getMargins()['left']);
-    }
-    
-}
-
 
 class printClientList{
 
@@ -58,9 +13,8 @@ public function getClientsPrinting(){
     
   require_once('tcpdf_include.php');
 
-
 //   $pdf = new TCPDF('L', PDF_UN IT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
-  $pdf = new MYPDF('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+  $pdf = new TCPDF('L', PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
   $pdf->startPageGroup();
   $pdf->setPrintHeader(false);  /*remove line on top of the page*/
 
@@ -78,7 +32,7 @@ $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
 $pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
 
 // set margins
-$pdf->SetMargins(9,5);
+$pdf->SetMargins(7,7);
 $pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
 $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
 
@@ -134,6 +88,7 @@ $forTheMont = date("F Y", strtotime($slcMonth));
 $data = (new ControllerPastdue)->ctrShowEMBBranches();
 $dataFCHN = (new ControllerPastdue)->ctrShowFCHNBranches();
 $dataFCHM = (new ControllerPastdue)->ctrShowFCHMBranches();
+$dataFCHA = (new ControllerPastdue)->ctrShowFCHABranches();
 $dataRLC = (new ControllerPastdue)->ctrShowRLCBranches();
 $dataELC = (new ControllerPastdue)->ctrShowELCBranches();
 
@@ -175,13 +130,12 @@ $header = <<<EOF
     </tr>
 
     <tr>
-    <td style="border:none;"></td>
-    <td style="border:none;"></td>
-    <td style="border:none;width:64px"></td>
-    <td colspan="8" style="text-align:center;">$range</td>
-    <td style="border:none;"></td>
-    <td style="border:none;"></td>
-   
+        <td style="border:none;"></td>
+        <td style="border:none;"></td>
+        <td style="border:none;width:62px"></td>
+        <td colspan="8" style="text-align:center;">$range</td>
+        <td style="border:none;"></td>
+        <td style="border:none;"></td>
     </tr>
 
 
@@ -197,15 +151,15 @@ $header = <<<EOF
 <tr>
     <th style="width:40px;"></th>
     <th style="text-align: Center;border:1px solid black;width:76px;">TOTAL PDR</th>
-    <th style="border:1px solid black;width:40px;"></th>
+    <th style="border:1px solid black;width:42px;"></th>
     <th style="border:1px solid black;width:112px;"></th>
     <th style="border:1px solid black;width:40px;"></th>
+    <th style="border:1px solid black;width:114px;"></th>
+    <th style="border:1px solid black;width:42px;"></th>
+    <th style="border:1px solid black;width:113px;"></th>
+    <th style="border:1px solid black;width:42px;"></th>
     <th style="border:1px solid black;width:112px;"></th>
-    <th style="border:1px solid black;width:40px;"></th>
-    <th style="border:1px solid black;width:112px;"></th>
-    <th style="border:1px solid black;width:40px;"></th>
-    <th style="border:1px solid black;width:112px;"></th>
-    <th style="border:1px solid black;width:40px;text-align:center;"><span style="color:white;">sd</span>SSP #</th>
+    <th style="border:1px solid black;width:42px;text-align:center;"><span style="color:white;">sd</span>SSP #</th>
     <th style="border:1px solid black;width:112px;text-align:center;">TOTAL</th>
 </tr>
     </table>
@@ -247,14 +201,14 @@ foreach ($data as $item) {
         $balance = $item3['balance'];
         $refdate = $item3['refdate'];
 
-       
+        if($balance == 0){
             $goodToBad1 = (new ControllerPastdue)->ctrGetAllGoodToBad1($account_no, $branch_name, $refdate);
             foreach ($goodToBad1 as $item4) {
                 $debit = $item4['debit'];
             }
             $total_debit += $debit;
 
-        
+        }
         
     }
 
@@ -391,16 +345,16 @@ foreach ($data as $item) {
                     <tr>
                         <td style="width:100px;">$branch_name</td>
                         <td style="text-align: right;width:40px;">$count</td>
-                        <td style="text-align: right;">$formatted_amount</td>
-                        <td style="text-align: right;width:40px;">$total_gb</td>
+                        <td style="font-weight:bold; width:76px;text-align: right;">$formatted_amount</td>
+                        <td style="text-align: right;width:42px;">$total_gb</td>
                         <td style="text-align: right;width:112">$formatted_total_amount_gb</td>
                         <td style="text-align: right;width:40px;"></td>
-                        <td style="text-align: right;width:112px;">$mis_debit</td>
-                        <td style="text-align: right;width:40px;">$total_f</td>
-                        <td style="text-align: right;width:112px;">$formatted_total_collection</td>
-                        <td style="text-align: right;width:40px;">$total_w</td>
+                        <td style="text-align: right;width:114px;">$mis_debit</td>
+                        <td style="text-align: right;width:42px;">$total_f</td>
+                        <td style="text-align: right;width:113px;">$formatted_total_collection</td>
+                        <td style="text-align: right;width:42px;">$total_w</td>
                         <td style="text-align: right;width:112px;">$formatted_total_pdr_written</td>
-                        <td style="text-align: right;width:40px;">$total_ssp</td>
+                        <td style="text-align: right;width:42px;">$total_ssp</td>
                         <td style="text-align: right;width:112px;">$formatted_total_BadAcc</td>
                     </tr>
 
@@ -426,16 +380,16 @@ $header .= <<<EOF
         <tr>
             <td style="font-weight:bold;color: red;width:100px;">Sub Total - EMB</td>
             <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subTotalAcc1</td>
-            <td style="font-weight:bold;color: red;text-align: right;">$formatted_subTotalPDR</td>
-            <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subGtB</td>
+            <td style="font-weight:bold;color:red ;width:76px;red;text-align: right;">$formatted_subTotalPDR</td>
+            <td style="font-weight:bold;color: red;text-align: right;width:42px;">$formatted_subGtB</td>
             <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subTotalAmountGB</td>
             <td style="font-weight:bold;color: red;text-align: right;width:40px;"></td>
-            <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subTotalMisc</td>
-            <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subTotalFullyPaid</td>
-            <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subTotalCollection</td>
-            <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subTotalWrittenOf</td>
+             <td style="font-weight:bold;color: red;text-align: right;width:114px;">$formatted_subTotalMisc</td>
+            <td style="font-weight:bold;color: red;text-align: right;width:42px;">$formatted_subTotalFullyPaid</td>
+            <td style="font-weight:bold;color: red;text-align: right;width:113px;">$formatted_subTotalCollection</td>
+            <td style="font-weight:bold;color: red;text-align: right;width:42px;">$formatted_subTotalWrittenOf</td>
             <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subTotalAmountWrittenOff</td>
-            <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subtotalSSP</td>
+            <td style="font-weight:bold;color: red;text-align: right;width:42px;">$formatted_subtotalSSP</td>
             <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subtotalBadAccs</td>
         </tr>
         <tr>   
@@ -491,14 +445,14 @@ $header .= <<<EOF
                     $balance = $item3['balance'];
                     $refdate = $item3['refdate'];
 
-                   
+                    if($balance == 0){
                         $goodToBad1 = (new ControllerPastdue)->ctrGetAllGoodToBad1($account_no, $branch_name, $refdate);
                         foreach ($goodToBad1 as $item4) {
                             $debit = $item4['debit'];
                         }
                         $total_debit += $debit;
 
-                    
+                    }
                     
                 }
 
@@ -607,7 +561,7 @@ $header .= <<<EOF
                         $final_total2 = -1 * $result1;
                     }
                     // $count = $count + $total_w1 + $total_f1 ; 
-                    //$final_total2 = $final_total2 + $total_pdr_written1;
+                    $final_total2 = $final_total2 + $total_pdr_written1;
 
                 $formatted_amount = number_format($final_total2, 2, '.',',');
                 $total_ssp = $count + $total_gb1 - $total_f1 - $total_w1;
@@ -630,16 +584,16 @@ $header .= <<<EOF
                         <tr>
                             <td style="width:100px;">$branch_name</td>
                             <td style="text-align: right;width:40px;">$count</td>
-                            <td style="text-align: right;">$formatted_amount</td>
-                            <td style="text-align: right;width:40px;">$total_gb</td>
+                            <td style="font-weight:bold; width:76px;text-align: right;">$formatted_amount</td>
+                            <td style="text-align: right;width:42px;">$total_gb</td>
                             <td style="text-align: right;width:112">$formatted_total_amount_gb</td>
                             <td style="text-align: right;width:40px;"></td>
-                            <td style="text-align: right;width:112px;">$mis_debit</td>
-                            <td style="text-align: right;width:40px;">$total_f</td>
-                            <td style="text-align: right;width:112px;">$formatted_total_collection</td>
-                            <td style="text-align: right;width:40px;">$total_w</td>
+                            <td style="text-align: right;width:114px;">$mis_debit</td>
+                            <td style="text-align: right;width:42px;">$total_f</td>
+                            <td style="text-align: right;width:113px;">$formatted_total_collection</td>
+                            <td style="text-align: right;width:42px;">$total_w</td>
                             <td style="text-align: right;width:112px;">$formatted_total_pdr_written</td>
-                            <td style="text-align: right;width:40px;">$total_ssp</td>
+                           <td style="text-align: right;width:42px;">$total_ssp</td>
                             <td style="text-align: right;width:112px;">$formatted_total_BadAcc</td>
                         </tr>
 
@@ -663,18 +617,18 @@ $header .= <<<EOF
             $header .= <<<EOF
                         <table>
                     <tr>
-                        <td style="font-weight:bold;color: red;width:100px;">Sub Total - FCHV</td>
+                        <td style="font-weight:bold;color: red;width:100px;">Sub Total - FCHN</td>
                         <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subTotalAcc1</td>
-                        <td style="font-weight:bold;color: red;text-align: right;">$formatted_subTotalPDR</td>
-                        <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subGtB</td>
+                        <td style="font-weight:bold;color:red ;width:76px;red;text-align: right;">$formatted_subTotalPDR</td>
+                        <td style="font-weight:bold;color: red;text-align: right;width:42px;">$formatted_subGtB</td>
                         <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subTotalAmountGB</td>
                         <td style="font-weight:bold;color: red;text-align: right;width:40px;"></td>
-                        <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subTotalMisc</td>
-                        <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subTotalFullyPaid</td>
-                        <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subTotalCollection</td>
-                        <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subTotalWrittenOf</td>
+                         <td style="font-weight:bold;color: red;text-align: right;width:114px;">$formatted_subTotalMisc</td>
+                        <td style="font-weight:bold;color: red;text-align: right;width:42px;">$formatted_subTotalFullyPaid</td>
+                        <td style="font-weight:bold;color: red;text-align: right;width:113px;">$formatted_subTotalCollection</td>
+                        <td style="font-weight:bold;color: red;text-align: right;width:42px;">$formatted_subTotalWrittenOf</td>
                         <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subTotalAmountWrittenOff</td>
-                        <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subtotalSSP</td>
+                        <td style="font-weight:bold;color: red;text-align: right;width:42px;">$formatted_subtotalSSP</td>
                         <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subtotalBadAccs</td>
                     </tr>
                     <tr>   
@@ -730,14 +684,14 @@ foreach ($dataFCHM as $item9) {
         $balance = $item3['balance'];
         $refdate = $item3['refdate'];
 
-       
+        if($balance == 0){
             $goodToBad1 = (new ControllerPastdue)->ctrGetAllGoodToBad1($account_no, $branch_name, $refdate);
             foreach ($goodToBad1 as $item4) {
                 $debit = $item4['debit'];
             }
             $total_debit += $debit;
 
-        
+        }
         
     }
 
@@ -846,7 +800,7 @@ foreach ($dataFCHM as $item9) {
             $final_total2 = -1 * $result1;
         }
         // $count = $count + $total_w1 + $total_f1 ; 
-        //$final_total2 = $final_total2 + $total_pdr_written1;
+        $final_total2 = $final_total2 + $total_pdr_written1;
 
     $formatted_amount = number_format($final_total2, 2, '.',',');
     $total_ssp = $count + $total_gb1 - $total_f1 - $total_w1;
@@ -869,16 +823,16 @@ foreach ($dataFCHM as $item9) {
                 <tr>
                     <td style="width:100px;">$branch_name</td>
                     <td style="text-align: right;width:40px;">$count</td>
-                    <td style="text-align: right;">$formatted_amount</td>
-                    <td style="text-align: right;width:40px;">$total_gb</td>
+                    <td style="font-weight:bold; width:76px;text-align: right;">$formatted_amount</td>
+                    <td style="text-align: right;width:42px;">$total_gb</td>
                     <td style="text-align: right;width:112">$formatted_total_amount_gb</td>
                     <td style="text-align: right;width:40px;"></td>
-                    <td style="text-align: right;width:112px;">$mis_debit</td>
-                    <td style="text-align: right;width:40px;">$total_f</td>
-                    <td style="text-align: right;width:112px;">$formatted_total_collection</td>
-                    <td style="text-align: right;width:40px;">$total_w</td>
+                    <td style="text-align: right;width:114px;">$mis_debit</td>
+                    <td style="text-align: right;width:42px;">$total_f</td>
+                    <td style="text-align: right;width:113px;">$formatted_total_collection</td>
+                    <td style="text-align: right;width:42px;">$total_w</td>
                     <td style="text-align: right;width:112px;">$formatted_total_pdr_written</td>
-                    <td style="text-align: right;width:40px;">$total_ssp</td>
+                   <td style="text-align: right;width:42px;">$total_ssp</td>
                     <td style="text-align: right;width:112px;">$formatted_total_BadAcc</td>
                 </tr>
 
@@ -904,16 +858,16 @@ $header .= <<<EOF
                 <tr>
                     <td style="font-weight:bold;color: red;width:100px;">Sub Total - FCHM</td>
                     <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subTotalAcc1</td>
-                    <td style="font-weight:bold;color: red;text-align: right;">$formatted_subTotalPDR</td>
-                    <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subGtB</td>
+                    <td style="font-weight:bold;color:red ;width:76px;red;text-align: right;">$formatted_subTotalPDR</td>
+                    <td style="font-weight:bold;color: red;text-align: right;width:42px;">$formatted_subGtB</td>
                     <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subTotalAmountGB</td>
                     <td style="font-weight:bold;color: red;text-align: right;width:40px;"></td>
-                    <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subTotalMisc</td>
-                    <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subTotalFullyPaid</td>
-                    <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subTotalCollection</td>
-                    <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subTotalWrittenOf</td>
+                     <td style="font-weight:bold;color: red;text-align: right;width:114px;">$formatted_subTotalMisc</td>
+                    <td style="font-weight:bold;color: red;text-align: right;width:42px;">$formatted_subTotalFullyPaid</td>
+                    <td style="font-weight:bold;color: red;text-align: right;width:113px;">$formatted_subTotalCollection</td>
+                    <td style="font-weight:bold;color: red;text-align: right;width:42px;">$formatted_subTotalWrittenOf</td>
                     <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subTotalAmountWrittenOff</td>
-                    <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subtotalSSP</td>
+                    <td style="font-weight:bold;color: red;text-align: right;width:42px;">$formatted_subtotalSSP</td>
                     <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subtotalBadAccs</td>
                 </tr>
                 <tr>   
@@ -946,246 +900,8 @@ $header .= <<<EOF
     $emb_grandtotalSSP+= $emb_subtotalSSP;
     $emb_grandtotalBadAccs+= $emb_subtotalBadAccs;
 
-$emb_subTotalAcc1 = 0;
-$emb_subTotalPDR = 0;
-$emb_subGtB = 0;
-$emb_subTotalAmountGB = 0;
-$emb_subTotalMisc= 0;
-$emb_subTotalWrittenOff= 0;
-$emb_subTotalAmountWrittenOff= 0;
-$emb_subTotalFullyPaid= 0;
-$emb_subtotalCollection= 0;
-$emb_subtotalSSP= 0;
-$emb_subtotalBadAccs= 0;
 
-foreach ($dataRLC as $item10) {
-$branch_name = $item10['full_name'];
-
-
-$goodToBad = (new ControllerPastdue)->ctrGetAllGoodToBad($branch_name, $month, $lastDay);
-$total_debit = 0;
-foreach ($goodToBad as $item3) {
-    $account_no = $item3['account_no'];
-    $balance = $item3['balance'];
-    $refdate = $item3['refdate'];
-
-   
-        $goodToBad1 = (new ControllerPastdue)->ctrGetAllGoodToBad1($account_no, $branch_name, $refdate);
-        foreach ($goodToBad1 as $item4) {
-            $debit = $item4['debit'];
-        }
-        $total_debit += $debit;
-
-    
-    
-}
-
-$getMisc = (new ControllerPastdue)->ctrGetMiscellaneous($branch_name, $month, $lastDay);
-if(!empty($getMisc)){
-    foreach ($getMisc as $item5) {
-        $mis_debit = $item5['debit'];
-        $mis_debit1 = abs($item5['debit']);
-    }
-}else{
-    $mis_debit = "";
-}
-if($mis_debit == 0){
-    $mis_debit = "";
-}else{
-    $mis_debit = number_format(abs($item5['debit']) , 2, '.',',');
-}
-
-$total_gb = count($goodToBad);
-$total_gb1 = count($goodToBad);
-
-if($total_gb == 0){
-    $total_gb = "";
-}   
-
-
-if($total_debit <0){
-    $total_amount_gb = abs($total_debit);
-    $emb_subTotalAmountGB += $total_amount_gb;
-}else{
-    $total_amount_gb = $total_debit * -1;
-    $emb_subTotalAmountGB += $total_amount_gb;
-}
-
-
-if($total_amount_gb != 0){
-    $formatted_total_amount_gb = number_format($total_amount_gb, 2, '.',',');
-}else{
-    $formatted_total_amount_gb ="";
-}
-
-
-
-
-    // Start For PDR WRITTEN OFF
-    $getPDRWrittenOff = (new ControllerPastdue)->ctrGetPDRWrittenOff($branch_name, $month, $lastDay);
-    if(!empty($getPDRWrittenOff)){
-    foreach ($getPDRWrittenOff as $item6) {
-        $total_w = $item6['total_w'];
-        $total_w1 = $item6['total_w'];
-        $total_pdr_written1 = abs($item6['result']);
-        $total_pdr_written = abs($item6['result']);
-    }
-
-    
-    if($total_pdr_written == 0){
-        $total_pdr_written ="";
-        $formatted_total_pdr_written = "";
-    }else{
-        $formatted_total_pdr_written = number_format($total_pdr_written1, 2, '.',',');
-    }
-        if($total_w == 0){
-            $total_w ="";
-        }
-}else{
-    $total_w ="";
-}
-// END PDR WRITTEN OFF
-
-// Start PDR FullyPaid 
-$getFullyPaid = (new ControllerPastdue)->ctrGetFullyPaid($branch_name, $month, $lastDay);
-if(!empty($getFullyPaid)){
-    foreach ($getFullyPaid as $item7) {
-        $total_f = $item7['total_f'];
-        $total_f1 = $item7['total_f'];
-        $total_collection =  $item7['total_collection'];
-        $total_collection1 =  $item7['total_collection'];
-    }
-
-    if($total_collection == 0){
-        $total_collection ="";
-        $formatted_total_collection = "";
-    }else{
-        $formatted_total_collection = number_format($total_collection, 2, '.',',');
-    }
-
-    if($total_f == 0){
-        $total_f ="";
-    }
-}
-else{
-    $total_f ="";
-}
-
-$badAccountslastMonth = (new ControllerPastdue)->ctrGetAllBadAccounts($branch_name, $lastMonth);
-foreach ($badAccountslastMonth as $item2) {
-    $count = $item2['total_Bad'];
-    $result = $item2['result'];
-}
-
-$result1 = round($result, 2); // Round to 2 decimal places
-
-    if ($result1 <0) {
-        $final_total2 = abs($result1);
-    }else{
-        $final_total2 = -1 * $result1;
-    }
-    // $count = $count + $total_w1 + $total_f1 ; 
-    //$final_total2 = $final_total2 + $total_pdr_written1;
-
-$formatted_amount = number_format($final_total2, 2, '.',',');
-$total_ssp = $count + $total_gb1 - $total_f1 - $total_w1;
-$total_BadAcc= ($final_total2 +$total_amount_gb) + $mis_debit1 - $total_collection1 - $total_pdr_written1;
-$formatted_total_BadAcc = number_format($total_BadAcc, 2, '.',',');
-
-$emb_subTotalAcc1 += $count;
-$emb_subTotalPDR += $final_total2;
-$emb_subGtB += $total_gb1;
-$emb_subTotalMisc += $mis_debit1;
-$emb_subTotalWrittenOff += $total_w1;
-$emb_subTotalAmountWrittenOff += $total_pdr_written1;
-$emb_subTotalFullyPaid += $total_f1;
-$emb_subtotalCollection += $total_collection1;
-$emb_subtotalSSP += $total_ssp;
-$emb_subtotalBadAccs+= $total_BadAcc;
-$branch_name = str_replace("RLC", "RFC", $branch_name);
-$header .= <<<EOF
-        <table>
-        <tr>
-            <td style="width:100px;">$branch_name</td>
-            <td style="text-align: right;width:40px;">$count</td>
-            <td style="text-align: right;">$formatted_amount</td>
-            <td style="text-align: right;width:40px;">$total_gb</td>
-            <td style="text-align: right;width:112">$formatted_total_amount_gb</td>
-            <td style="text-align: right;width:40px;"></td>
-            <td style="text-align: right;width:112px;">$mis_debit</td>
-            <td style="text-align: right;width:40px;">$total_f</td>
-            <td style="text-align: right;width:112px;">$formatted_total_collection</td>
-            <td style="text-align: right;width:40px;">$total_w</td>
-            <td style="text-align: right;width:112px;">$formatted_total_pdr_written</td>
-            <td style="text-align: right;width:40px;">$total_ssp</td>
-            <td style="text-align: right;width:112px;">$formatted_total_BadAcc</td>
-        </tr>
-
-        </table>
-    EOF;
-
-}
-
-$formatted_subTotalAcc1 = number_format($emb_subTotalAcc1, 0, '.',',');
-$formatted_subTotalPDR = number_format($emb_subTotalPDR, 2, '.',',');
-$formatted_subGtB = number_format($emb_subGtB, 0, '.',',');
-$formatted_subTotalAmountGB = number_format($emb_subTotalAmountGB, 2, '.',',');
-$formatted_subTotalMisc = number_format($emb_subTotalMisc, 2, '.',',');
-$formatted_subTotalWrittenOf = number_format($emb_subTotalWrittenOff, 0, '.',',');
-$formatted_subTotalAmountWrittenOff = number_format($emb_subTotalAmountWrittenOff, 2, '.',',');
-$formatted_subTotalFullyPaid  = number_format($emb_subTotalFullyPaid, 0, '.',',');
-$formatted_subTotalCollection = number_format($emb_subtotalCollection, 2, '.',',');
-$formatted_subtotalSSP = number_format($emb_subtotalSSP, 0, '.',',');
-$formatted_subtotalBadAccs = number_format($emb_subtotalBadAccs, 2, '.',',');
-
-$header .= <<<EOF
-    <table>
-    <tr>
-        <td style="font-weight:bold;color: red;width:100px;">Sub Total - RFC</td>
-        <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subTotalAcc1</td>
-        <td style="font-weight:bold;color: red;text-align: right;">$formatted_subTotalPDR</td>
-        <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subGtB</td>
-        <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subTotalAmountGB</td>
-        <td style="font-weight:bold;color: red;text-align: right;width:40px;"></td>
-        <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subTotalMisc</td>
-        <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subTotalFullyPaid</td>
-        <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subTotalCollection</td>
-        <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subTotalWrittenOf</td>
-        <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subTotalAmountWrittenOff</td>
-        <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subtotalSSP</td>
-        <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subtotalBadAccs</td>
-    </tr>
-    <tr>   
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-    </tr>
-    </table>
-EOF;
-
-$emb_grandTotalAcc1 +=   $emb_subTotalAcc1;
-$emb_grandTotalPDR += $emb_subTotalPDR;
-$emb_grandGtB += $emb_subGtB;
-$emb_grandTotalAmountGB += $emb_subTotalAmountGB;
-$emb_grandTotalMisc+= $emb_subTotalMisc;
-$emb_grandTotalWrittenOff+= $emb_subTotalWrittenOff;
-$emb_grandTotalAmountWrittenOff+= $emb_subTotalAmountWrittenOff;
-$emb_grandTotalFullyPaid+= $emb_subTotalFullyPaid;
-$emb_grandtotalCollection+= $emb_subtotalCollection;
-$emb_grandtotalSSP+= $emb_subtotalSSP;
-$emb_grandtotalBadAccs+= $emb_subtotalBadAccs;
-
-                $emb_subTotalAcc1 = 0;
+     $emb_subTotalAcc1 = 0;
                 $emb_subTotalPDR = 0;
                 $emb_subGtB = 0;
                 $emb_subTotalAmountGB = 0;
@@ -1197,7 +913,7 @@ $emb_grandtotalBadAccs+= $emb_subtotalBadAccs;
                 $emb_subtotalSSP= 0;
                 $emb_subtotalBadAccs= 0;
             
-                foreach ($dataELC as $item11) {
+                foreach ($dataFCHA as $item11) {
                     $branch_name = $item11['full_name'];
                     
     
@@ -1208,14 +924,14 @@ $emb_grandtotalBadAccs+= $emb_subtotalBadAccs;
                         $balance = $item3['balance'];
                         $refdate = $item3['refdate'];
     
-                      
+                        if($balance == 0){
                             $goodToBad1 = (new ControllerPastdue)->ctrGetAllGoodToBad1($account_no, $branch_name, $refdate);
                             foreach ($goodToBad1 as $item4) {
                                 $debit = $item4['debit'];
                             }
                             $total_debit += $debit;
     
-                        
+                        }
                         
                     }
     
@@ -1324,7 +1040,7 @@ $emb_grandtotalBadAccs+= $emb_subtotalBadAccs;
                             $final_total2 = -1 * $result1;
                         }
                         // $count = $count + $total_w1 + $total_f1 ; 
-                        //$final_total2 = $final_total2 + $total_pdr_written1;
+                        $final_total2 = $final_total2 + $total_pdr_written1;
     
                     $formatted_amount = number_format($final_total2, 2, '.',',');
                     $total_ssp = $count + $total_gb1 - $total_f1 - $total_w1;
@@ -1349,16 +1065,16 @@ $emb_grandtotalBadAccs+= $emb_subtotalBadAccs;
                         <tr>
                             <td style="font-weight:bold;color: red;width:100px;">$branch_name</td>
                             <td style="font-weight:bold;color: red;text-align: right;width:40px;">$count</td>
-                            <td style="font-weight:bold;color: red;text-align: right;">$formatted_amount</td>
-                            <td style="font-weight:bold;color: red;text-align: right;width:40px;">$total_gb</td>
+                            <td style="font-weight:bold;color: red;width:76px;text-align: right;">$formatted_amount</td>
+                            <td style="font-weight:bold;color: red;text-align: right;width:42px;">$total_gb</td>
                             <td style="font-weight:bold;color: red;text-align: right;width:112">$formatted_total_amount_gb</td>
                             <td style="font-weight:bold;color: red;text-align: right;width:40px;"></td>
-                            <td style="font-weight:bold;color: red;text-align: right;width:112px;">$mis_debit</td>
-                            <td style="font-weight:bold;color: red;text-align: right;width:40px;">$total_f</td>
-                            <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_total_collection</td>
-                            <td style="font-weight:bold;color: red;text-align: right;width:40px;">$total_w</td>
+                            <td style="font-weight:bold;color: red;text-align: right;width:114px;">$mis_debit</td>
+                            <td style="font-weight:bold;color: red;text-align: right;width:42px;">$total_f</td>
+                            <td style="font-weight:bold;color: red;text-align: right;width:113px;">$formatted_total_collection</td>
+                            <td style="font-weight:bold;color: red;text-align: right;width:42px;">$total_w</td>
                             <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_total_pdr_written</td>
-                            <td style="font-weight:bold;color: red;text-align: right;width:40px;">$total_ssp</td>
+                            <td style="font-weight:bold;color: red;text-align: right;width:42px;">$total_ssp</td>
                             <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_total_BadAcc</td>
                         </tr>
 
@@ -1371,16 +1087,468 @@ $emb_grandtotalBadAccs+= $emb_subtotalBadAccs;
                             <tr>
                                 <td style="width:100px;"></td>
                                 <td style="text-align: right;width:40px;"></td>
-                                <td style="text-align: right;"></td>
-                                <td style="text-align: right;width:40px;"></td>
+                                <td style="text-align: right;width:76px;"></td>
+                                <td style="text-align: right;width:42px;"></td>
                                 <td style="text-align: right;width:112"></td>
                                 <td style="text-align: right;width:40px;"></td>
+                                <td style="text-align: right;width:114px;"></td>
+                                <td style="text-align: right;width:42px;"></td>
+                                <td style="text-align: right;width:113px;"></td>
+                                <td style="text-align: right;width:42px;"></td>
                                 <td style="text-align: right;width:112px;"></td>
-                                <td style="text-align: right;width:40px;"></td>
+                                <td style="text-align: right;width:42px;"></td>
                                 <td style="text-align: right;width:112px;"></td>
+                            </tr>
+                                </table>
+                EOF;
+                        $emb_grandTotalAcc1 +=   $emb_subTotalAcc1;
+                        $emb_grandTotalPDR += $emb_subTotalPDR;
+                        $emb_grandGtB += $emb_subGtB;
+                        $emb_grandTotalAmountGB += $emb_subTotalAmountGB;
+                        $emb_grandTotalMisc+= $emb_subTotalMisc;
+                        $emb_grandTotalWrittenOff+= $emb_subTotalWrittenOff;
+                        $emb_grandTotalAmountWrittenOff+= $emb_subTotalAmountWrittenOff;
+                        $emb_grandTotalFullyPaid+= $emb_subTotalFullyPaid;
+                        $emb_grandtotalCollection+= $emb_subtotalCollection;
+                        $emb_grandtotalSSP+= $emb_subtotalSSP;
+                        $emb_grandtotalBadAccs+= $emb_subtotalBadAccs;
+
+$emb_subTotalAcc1 = 0;
+$emb_subTotalPDR = 0;
+$emb_subGtB = 0;
+$emb_subTotalAmountGB = 0;
+$emb_subTotalMisc= 0;
+$emb_subTotalWrittenOff= 0;
+$emb_subTotalAmountWrittenOff= 0;
+$emb_subTotalFullyPaid= 0;
+$emb_subtotalCollection= 0;
+$emb_subtotalSSP= 0;
+$emb_subtotalBadAccs= 0;
+
+foreach ($dataRLC as $item10) {
+$branch_name = $item10['full_name'];
+
+
+$goodToBad = (new ControllerPastdue)->ctrGetAllGoodToBad($branch_name, $month, $lastDay);
+$total_debit = 0;
+foreach ($goodToBad as $item3) {
+    $account_no = $item3['account_no'];
+    $balance = $item3['balance'];
+    $refdate = $item3['refdate'];
+
+    if($balance == 0){
+        $goodToBad1 = (new ControllerPastdue)->ctrGetAllGoodToBad1($account_no, $branch_name, $refdate);
+        foreach ($goodToBad1 as $item4) {
+            $debit = $item4['debit'];
+        }
+        $total_debit += $debit;
+
+    }
+    
+}
+
+$getMisc = (new ControllerPastdue)->ctrGetMiscellaneous($branch_name, $month, $lastDay);
+if(!empty($getMisc)){
+    foreach ($getMisc as $item5) {
+        $mis_debit = $item5['debit'];
+        $mis_debit1 = abs($item5['debit']);
+    }
+}else{
+    $mis_debit = "";
+}
+if($mis_debit == 0){
+    $mis_debit = "";
+}else{
+    $mis_debit = number_format(abs($item5['debit']) , 2, '.',',');
+}
+
+$total_gb = count($goodToBad);
+$total_gb1 = count($goodToBad);
+
+if($total_gb == 0){
+    $total_gb = "";
+}   
+
+
+if($total_debit <0){
+    $total_amount_gb = abs($total_debit);
+    $emb_subTotalAmountGB += $total_amount_gb;
+}else{
+    $total_amount_gb = $total_debit * -1;
+    $emb_subTotalAmountGB += $total_amount_gb;
+}
+
+
+if($total_amount_gb != 0){
+    $formatted_total_amount_gb = number_format($total_amount_gb, 2, '.',',');
+}else{
+    $formatted_total_amount_gb ="";
+}
+
+
+
+
+    // Start For PDR WRITTEN OFF
+    $getPDRWrittenOff = (new ControllerPastdue)->ctrGetPDRWrittenOff($branch_name, $month, $lastDay);
+    if(!empty($getPDRWrittenOff)){
+    foreach ($getPDRWrittenOff as $item6) {
+        $total_w = $item6['total_w'];
+        $total_w1 = $item6['total_w'];
+        $total_pdr_written1 = abs($item6['result']);
+        $total_pdr_written = abs($item6['result']);
+    }
+
+    
+    if($total_pdr_written == 0){
+        $total_pdr_written ="";
+        $formatted_total_pdr_written = "";
+    }else{
+        $formatted_total_pdr_written = number_format($total_pdr_written1, 2, '.',',');
+    }
+        if($total_w == 0){
+            $total_w ="";
+        }
+}else{
+    $total_w ="";
+}
+// END PDR WRITTEN OFF
+
+// Start PDR FullyPaid 
+$getFullyPaid = (new ControllerPastdue)->ctrGetFullyPaid($branch_name, $month, $lastDay);
+if(!empty($getFullyPaid)){
+    foreach ($getFullyPaid as $item7) {
+        $total_f = $item7['total_f'];
+        $total_f1 = $item7['total_f'];
+        $total_collection =  $item7['total_collection'];
+        $total_collection1 =  $item7['total_collection'];
+    }
+
+    if($total_collection == 0){
+        $total_collection ="";
+        $formatted_total_collection = "";
+    }else{
+        $formatted_total_collection = number_format($total_collection, 2, '.',',');
+    }
+
+    if($total_f == 0){
+        $total_f ="";
+    }
+}
+else{
+    $total_f ="";
+}
+
+$badAccountslastMonth = (new ControllerPastdue)->ctrGetAllBadAccounts($branch_name, $lastMonth);
+foreach ($badAccountslastMonth as $item2) {
+    $count = $item2['total_Bad'];
+    $result = $item2['result'];
+}
+
+$result1 = round($result, 2); // Round to 2 decimal places
+
+    if ($result1 <0) {
+        $final_total2 = abs($result1);
+    }else{
+        $final_total2 = -1 * $result1;
+    }
+    // $count = $count + $total_w1 + $total_f1 ; 
+    $final_total2 = $final_total2 + $total_pdr_written1;
+
+$formatted_amount = number_format($final_total2, 2, '.',',');
+$total_ssp = $count + $total_gb1 - $total_f1 - $total_w1;
+$total_BadAcc= ($final_total2 +$total_amount_gb) + $mis_debit1 - $total_collection1 - $total_pdr_written1;
+$formatted_total_BadAcc = number_format($total_BadAcc, 2, '.',',');
+
+$emb_subTotalAcc1 += $count;
+$emb_subTotalPDR += $final_total2;
+$emb_subGtB += $total_gb1;
+$emb_subTotalMisc += $mis_debit1;
+$emb_subTotalWrittenOff += $total_w1;
+$emb_subTotalAmountWrittenOff += $total_pdr_written1;
+$emb_subTotalFullyPaid += $total_f1;
+$emb_subtotalCollection += $total_collection1;
+$emb_subtotalSSP += $total_ssp;
+$emb_subtotalBadAccs+= $total_BadAcc;
+
+$header .= <<<EOF
+        <table>
+        <tr>
+            <td style="width:100px;">$branch_name</td>
+            <td style="text-align: right;width:40px;">$count</td>
+            <td style="font-weight:bold; width:76px;text-align: right;">$formatted_amount</td>
+            <td style="text-align: right;width:42px;">$total_gb</td>
+            <td style="text-align: right;width:112">$formatted_total_amount_gb</td>
+            <td style="text-align: right;width:40px;"></td>
+            <td style="text-align: right;width:114px;">$mis_debit</td>
+            <td style="text-align: right;width:42px;">$total_f</td>
+            <td style="text-align: right;width:113px;">$formatted_total_collection</td>
+            <td style="text-align: right;width:42px;">$total_w</td>
+            <td style="text-align: right;width:112px;">$formatted_total_pdr_written</td>
+           <td style="text-align: right;width:42px;">$total_ssp</td>
+            <td style="text-align: right;width:112px;">$formatted_total_BadAcc</td>
+        </tr>
+
+        </table>
+    EOF;
+
+}
+
+$formatted_subTotalAcc1 = number_format($emb_subTotalAcc1, 0, '.',',');
+$formatted_subTotalPDR = number_format($emb_subTotalPDR, 2, '.',',');
+$formatted_subGtB = number_format($emb_subGtB, 0, '.',',');
+$formatted_subTotalAmountGB = number_format($emb_subTotalAmountGB, 2, '.',',');
+$formatted_subTotalMisc = number_format($emb_subTotalMisc, 2, '.',',');
+$formatted_subTotalWrittenOf = number_format($emb_subTotalWrittenOff, 0, '.',',');
+$formatted_subTotalAmountWrittenOff = number_format($emb_subTotalAmountWrittenOff, 2, '.',',');
+$formatted_subTotalFullyPaid  = number_format($emb_subTotalFullyPaid, 0, '.',',');
+$formatted_subTotalCollection = number_format($emb_subtotalCollection, 2, '.',',');
+$formatted_subtotalSSP = number_format($emb_subtotalSSP, 0, '.',',');
+$formatted_subtotalBadAccs = number_format($emb_subtotalBadAccs, 2, '.',',');
+
+$header .= <<<EOF
+    <table>
+    <tr>
+        <td style="font-weight:bold;color: red;width:100px;">Sub Total - RLC</td>
+        <td style="font-weight:bold;color: red;text-align: right;width:40px;">$formatted_subTotalAcc1</td>
+        <td style="font-weight:bold;color:red ;width:76px;red;text-align: right;">$formatted_subTotalPDR</td>
+        <td style="font-weight:bold;color: red;text-align: right;width:42px;">$formatted_subGtB</td>
+        <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subTotalAmountGB</td>
+        <td style="font-weight:bold;color: red;text-align: right;width:40px;"></td>
+         <td style="font-weight:bold;color: red;text-align: right;width:114px;">$formatted_subTotalMisc</td>
+        <td style="font-weight:bold;color: red;text-align: right;width:42px;">$formatted_subTotalFullyPaid</td>
+        <td style="font-weight:bold;color: red;text-align: right;width:113px;">$formatted_subTotalCollection</td>
+        <td style="font-weight:bold;color: red;text-align: right;width:42px;">$formatted_subTotalWrittenOf</td>
+        <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subTotalAmountWrittenOff</td>
+        <td style="font-weight:bold;color: red;text-align: right;width:42px;">$formatted_subtotalSSP</td>
+        <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_subtotalBadAccs</td>
+    </tr>
+    <tr>   
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    </table>
+EOF;
+
+$emb_grandTotalAcc1 +=   $emb_subTotalAcc1;
+$emb_grandTotalPDR += $emb_subTotalPDR;
+$emb_grandGtB += $emb_subGtB;
+$emb_grandTotalAmountGB += $emb_subTotalAmountGB;
+$emb_grandTotalMisc+= $emb_subTotalMisc;
+$emb_grandTotalWrittenOff+= $emb_subTotalWrittenOff;
+$emb_grandTotalAmountWrittenOff+= $emb_subTotalAmountWrittenOff;
+$emb_grandTotalFullyPaid+= $emb_subTotalFullyPaid;
+$emb_grandtotalCollection+= $emb_subtotalCollection;
+$emb_grandtotalSSP+= $emb_subtotalSSP;
+$emb_grandtotalBadAccs+= $emb_subtotalBadAccs;
+
+                $emb_subTotalAcc1 = 0;
+                $emb_subTotalPDR = 0;
+                $emb_subGtB = 0;
+                $emb_subTotalAmountGB = 0;
+                $emb_subTotalMisc= 0;
+                $emb_subTotalWrittenOff= 0;
+                $emb_subTotalAmountWrittenOff= 0;
+                $emb_subTotalFullyPaid= 0;
+                $emb_subtotalCollection= 0;
+                $emb_subtotalSSP= 0;
+                $emb_subtotalBadAccs= 0;
+            
+                foreach ($dataELC as $item11) {
+                    $branch_name = $item11['full_name'];
+                    
+    
+                    $goodToBad = (new ControllerPastdue)->ctrGetAllGoodToBad($branch_name, $month, $lastDay);
+                    $total_debit = 0;
+                    foreach ($goodToBad as $item3) {
+                        $account_no = $item3['account_no'];
+                        $balance = $item3['balance'];
+                        $refdate = $item3['refdate'];
+    
+                        if($balance == 0){
+                            $goodToBad1 = (new ControllerPastdue)->ctrGetAllGoodToBad1($account_no, $branch_name, $refdate);
+                            foreach ($goodToBad1 as $item4) {
+                                $debit = $item4['debit'];
+                            }
+                            $total_debit += $debit;
+    
+                        }
+                        
+                    }
+    
+                    $getMisc = (new ControllerPastdue)->ctrGetMiscellaneous($branch_name, $month, $lastDay);
+                    if(!empty($getMisc)){
+                        foreach ($getMisc as $item5) {
+                            $mis_debit = $item5['debit'];
+                            $mis_debit1 = abs($item5['debit']);
+                        }
+                    }else{
+                        $mis_debit = "";
+                    }
+                    if($mis_debit == 0){
+                        $mis_debit = "";
+                    }else{
+                        $mis_debit = number_format(abs($item5['debit']) , 2, '.',',');
+                    }
+    
+                    $total_gb = count($goodToBad);
+                    $total_gb1 = count($goodToBad);
+    
+                    if($total_gb == 0){
+                        $total_gb = "";
+                    }   
+    
+    
+                    if($total_debit <0){
+                        $total_amount_gb = abs($total_debit);
+                        $emb_subTotalAmountGB += $total_amount_gb;
+                    }else{
+                        $total_amount_gb = $total_debit * -1;
+                        $emb_subTotalAmountGB += $total_amount_gb;
+                    }
+    
+    
+                    if($total_amount_gb != 0){
+                        $formatted_total_amount_gb = number_format($total_amount_gb, 2, '.',',');
+                    }else{
+                        $formatted_total_amount_gb ="";
+                    }
+    
+                   
+    
+    
+                        // Start For PDR WRITTEN OFF
+                        $getPDRWrittenOff = (new ControllerPastdue)->ctrGetPDRWrittenOff($branch_name, $month, $lastDay);
+                        if(!empty($getPDRWrittenOff)){
+                        foreach ($getPDRWrittenOff as $item6) {
+                            $total_w = $item6['total_w'];
+                            $total_w1 = $item6['total_w'];
+                            $total_pdr_written1 = abs($item6['result']);
+                            $total_pdr_written = abs($item6['result']);
+                        }
+    
+                        
+                        if($total_pdr_written == 0){
+                            $total_pdr_written ="";
+                            $formatted_total_pdr_written = "";
+                        }else{
+                            $formatted_total_pdr_written = number_format($total_pdr_written1, 2, '.',',');
+                        }
+                            if($total_w == 0){
+                                $total_w ="";
+                            }
+                    }else{
+                        $total_w ="";
+                    }
+                    // END PDR WRITTEN OFF
+    
+                    // Start PDR FullyPaid 
+                    $getFullyPaid = (new ControllerPastdue)->ctrGetFullyPaid($branch_name, $month, $lastDay);
+                    if(!empty($getFullyPaid)){
+                        foreach ($getFullyPaid as $item7) {
+                            $total_f = $item7['total_f'];
+                            $total_f1 = $item7['total_f'];
+                            $total_collection =  $item7['total_collection'];
+                            $total_collection1 =  $item7['total_collection'];
+                        }
+    
+                        if($total_collection == 0){
+                            $total_collection ="";
+                            $formatted_total_collection = "";
+                        }else{
+                            $formatted_total_collection = number_format($total_collection, 2, '.',',');
+                        }
+    
+                        if($total_f == 0){
+                            $total_f ="";
+                        }
+                    }
+                    else{
+                        $total_f ="";
+                    }
+    
+                    $badAccountslastMonth = (new ControllerPastdue)->ctrGetAllBadAccounts($branch_name, $lastMonth);
+                    foreach ($badAccountslastMonth as $item2) {
+                        $count = $item2['total_Bad'];
+                        $result = $item2['result'];
+                    }
+    
+                    $result1 = round($result, 2); // Round to 2 decimal places
+    
+                        if ($result1 <0) {
+                            $final_total2 = abs($result1);
+                        }else{
+                            $final_total2 = -1 * $result1;
+                        }
+                        // $count = $count + $total_w1 + $total_f1 ; 
+                        $final_total2 = $final_total2 + $total_pdr_written1;
+    
+                    $formatted_amount = number_format($final_total2, 2, '.',',');
+                    $total_ssp = $count + $total_gb1 - $total_f1 - $total_w1;
+                    $total_BadAcc= ($final_total2 +$total_amount_gb) + $mis_debit1 - $total_collection1 - $total_pdr_written1;
+                    $formatted_total_BadAcc = number_format($total_BadAcc, 2, '.',',');
+
+
+    
+                    $emb_subTotalAcc1 += $count;
+                    $emb_subTotalPDR += $final_total2;
+                    $emb_subGtB += $total_gb1;
+                    $emb_subTotalMisc += $mis_debit1;
+                    $emb_subTotalWrittenOff += $total_w1;
+                    $emb_subTotalAmountWrittenOff += $total_pdr_written1;
+                    $emb_subTotalFullyPaid += $total_f1;
+                    $emb_subtotalCollection += $total_collection1;
+                    $emb_subtotalSSP += $total_ssp;
+                    $emb_subtotalBadAccs+= $total_BadAcc;
+    
+                    $header .= <<<EOF
+                        <table>
+                        <tr>
+                        
+                            <td style="font-weight:bold;color: red;width:100px;">$branch_name</td>
+                            <td style="font-weight:bold;color: red;text-align: right;width:40px;">$count</td>
+                            <td style="font-weight:bold;color: red;width:76px;text-align: right;">$formatted_amount</td>
+                            <td style="font-weight:bold;color: red;text-align: right;width:42px;">$total_gb</td>
+                            <td style="font-weight:bold;color: red;text-align: right;width:112">$formatted_total_amount_gb</td>
+                            <td style="font-weight:bold;color: red;text-align: right;width:40px;"></td>
+                            <td style="font-weight:bold;color: red;text-align: right;width:114px;">$mis_debit</td>
+                            <td style="font-weight:bold;color: red;text-align: right;width:42px;">$total_f</td>
+                            <td style="font-weight:bold;color: red;text-align: right;width:113px;">$formatted_total_collection</td>
+                            <td style="font-weight:bold;color: red;text-align: right;width:42px;">$total_w</td>
+                            <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_total_pdr_written</td>
+                            <td style="font-weight:bold;color: red;text-align: right;width:42px;">$total_ssp</td>
+                            <td style="font-weight:bold;color: red;text-align: right;width:112px;">$formatted_total_BadAcc</td>
+                        </tr>
+
+                        </table>
+                    EOF;
+    
+                }
+                $header .= <<<EOF
+                            <table>
+                            <tr>
+                                <td style="width:100px;"></td>
                                 <td style="text-align: right;width:40px;"></td>
+                                <td style="text-align: right;width:76px;"></td>
+                                <td style="text-align: right;width:42px;"></td>
+                                <td style="text-align: right;width:112"></td>
+                                <td style="text-align: right;width:40px;"></td>
+                                <td style="text-align: right;width:114px;"></td>
+                                <td style="text-align: right;width:42px;"></td>
+                                <td style="text-align: right;width:113px;"></td>
+                                <td style="text-align: right;width:42px;"></td>
                                 <td style="text-align: right;width:112px;"></td>
-                                <td style="text-align: right;width:40px;"></td>
+                                <td style="text-align: right;width:42px;"></td>
                                 <td style="text-align: right;width:112px;"></td>
                             </tr>
                                 </table>
@@ -1415,16 +1583,16 @@ $emb_grandtotalBadAccs+= $emb_subtotalBadAccs;
         <tr>
             <td style="font-weight:bold;color: blue; width:100px;">Total - JGC</td>
             <td style="font-weight:bold;text-align: right; color: blue; width:40px;">$formatted_grandTotalAcc1</td>
-            <td style="font-weight:bold;text-align: right; color: blue;">$formatted_grandTotalPDR</td>
-            <td style="font-weight:bold;text-align: right; color: blue; width:40px;">$formatted_grandGtB</td>
+            <td style="font-weight:bold;text-align: right; color: blue; width:76px;">$formatted_grandTotalPDR</td>
+            <td style="font-weight:bold;text-align: right; color: blue; width:42px;">$formatted_grandGtB</td>
             <td style="font-weight:bold;text-align: right; color: blue; width:112px;">$formatted_grandTotalAmountGB</td>
             <td style="font-weight:bold;text-align: right; color: blue; width:40px;"></td>
-            <td style="font-weight:bold;text-align: right; color: blue;width:112px;">$formatted_grandTotalMisc</td>
-            <td style="font-weight:bold;text-align: right; color: blue;width:40px;">$formatted_grandTotalFullyPaid</td>
-            <td style="font-weight:bold;text-align: right; color: blue;width:112px;">$formatted_grandTotalCollection</td>
-            <td style="font-weight:bold;text-align: right; color: blue;width:40px;">$formatted_grandTotalWrittenOf</td>
+            <td style="font-weight:bold;text-align: right; color: blue;width:114px;">$formatted_grandTotalMisc</td>
+            <td style="font-weight:bold;text-align: right; color: blue;width:42px;">$formatted_grandTotalFullyPaid</td>
+            <td style="font-weight:bold;text-align: right; color: blue;width:113px;">$formatted_grandTotalCollection</td>
+            <td style="font-weight:bold;text-align: right; color: blue;width:42px;">$formatted_grandTotalWrittenOf</td>
             <td style="font-weight:bold;text-align: right; color: blue;width:112px;">$formatted_grandTotalAmountWrittenOff</td>
-            <td style="font-weight:bold;text-align: right; color: blue;width:40px;">$formatted_grandtotalSSP</td>
+            <td style="font-weight:bold;text-align: right; color: blue;width:42px;">$formatted_grandtotalSSP</td>
             <td style="font-weight:bold;text-align: right; color: blue;width:112px;">$formatted_grandtotalBadAccs</td>
         </tr>
 

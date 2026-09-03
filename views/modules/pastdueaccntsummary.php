@@ -63,6 +63,7 @@
                             <option value="EMB">EMB</option>
                             <option value="FCHN">FCH-VISAYAS</option>
                             <option value="FCHM">FCH-Manila</option>
+                            <option value="FCHA">FCH-ANTIPOLO</option>
                             <option value="ELC">ELC</option>
                             <option value="RLC">RFC</option>
                           </select>

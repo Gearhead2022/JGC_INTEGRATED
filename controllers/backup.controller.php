@@ -635,85 +635,99 @@ class ControllerBackup{
 	}
 
 	/* admin  backup */    
-    static public function ctrMonthBackup($backup_month){
-        $date_from =  date('Y-m-01', strtotime($backup_month));
-        $date_to =  date('Y-m-t', strtotime($backup_month));
-        $answer = (new ModelBackup)->mdlMonthBackup($date_from, $date_to);
-        return $answer;
-    }
-    static public function ctrDeleteMonthBackupAll($backup_month) {
-        $date_from = date('Y-m-01', strtotime($backup_month));
-        $date_to = date('Y-m-t', strtotime($backup_month));
-        $answer = (new ModelBackup)->mdlGetMonthBackupAll($date_from, $date_to);
-    
-        if (!empty($answer)) {
-            $year = date('Y', strtotime($backup_month));
-            $month = date('F', strtotime($backup_month));
-    
-            foreach ($answer as $key => $value) {
-                $backup_id = $value['backup_id'];
-                $branch_name = $value['full_name'];
-                $branch_folder_path = '../views/files/Backup/' . $branch_name . '/' . $year . '/' . $month;
-                $table1 = 'backup_files';
-                $table = 'backup';
-                $data_id = $value['id']; 
-    
-                // Delete backup files
-                $f_result = (new ModelBackup)->mdlDeleteAllBackupFiles($table1, $backup_id);
-                if ($f_result == 'ok') {
-                    // Delete backup record
-                    $s_result = (new ModelBackup)->mdlDeleteBackup($table, $data_id);
-                    if ($s_result == 'ok') {
-                        // Delete files in the directory
-                        if (is_dir($branch_folder_path)) {
-                            if (!self::deleteDirectoryRecursive($branch_folder_path)) {
-                                return 'error';
-                            }
-                        }
-                        
-                    } else {
-                        return 'error';
-                    }
-                } else {
-                    return 'error';
-                }
-            }
-            return 'ok';
-        } else {
-            return 'error';
-        }
-    }
+    static public function ctrMonthBackup($date_from, $date_to){
+		$answer = (new ModelBackup)->mdlMonthBackup($date_from, $date_to);
+		return $answer;
+	}
+	static public function ctrDeleteMonthBackupAll($date_start, $date_end) {
 
-    static public function deleteDirectoryRecursive($dir) {
-        // Check if the path exists
-        if (!file_exists($dir)) {
-            echo "The file or directory does not exist: $dir\n";
-            return false;
-        }
-        $success = true;
+		$dateFrom = new DateTime($date_start);
+		$dateTo   = new DateTime($date_end);
+		$dateTo->modify('+1 day'); // include end date
 
-        if (is_file($dir)) {
-            // Attempt to delete a file
-            if (!unlink($dir)) {
-                echo "Error deleting file: $dir\n";
-                $success = false;
-            }
-        } elseif (is_dir($dir)) {
-            // Attempt to delete contents of the directory
-            $items = array_diff(scandir($dir), array('.', '..'));
-            foreach ($items as $item) {
-                $itemPath = $dir . DIRECTORY_SEPARATOR . $item;
-                if (!self::deleteDirectoryRecursive($itemPath)) {
-                    $success = false;
-                }
-            }
-            // Attempt to delete the directory itself
-            if (!rmdir($dir)) {
-                echo "Error deleting directory: $dir\n";
-                $success = false;
-            }
-        }
-        return $success;
-    }
+		$answer = (new ModelBackup)->mdlGetMonthBackupAll(
+			$dateFrom->format('Y-m-d'),
+			(new DateTime($date_end))->format('Y-m-d')
+		);
+
+		if (empty($answer)) {
+			return 'error';
+		}
+
+		$period = new DatePeriod(
+			$dateFrom,
+			new DateInterval('P1D'),
+			$dateTo
+		);
+
+		foreach ($answer as $value) {
+
+			$backup_id   = $value['backup_id'];
+			$branch_name = $value['full_name'];
+			$data_id     = $value['id'];
+
+			// Delete folders PER DAY
+			foreach ($period as $date) {
+
+				$year  = $date->format('Y');
+				$month = $date->format('F');
+				$day   = $date->format('j');
+
+				$branch_folder_path =
+					'../views/files/Backup/' .
+					$branch_name . '/' .
+					$year . '/' .
+					$month . '/' .
+					$month . ' ' . $day . ', ' . $year;
+				
+				if (is_dir($branch_folder_path)) {
+					if (!self::deleteDirectoryRecursive($branch_folder_path)) {
+						return 'error';
+					}
+				}
+			}
+					// Delete DB files first
+			$f_result = (new ModelBackup)->mdlDeleteAllBackupFiles('backup_files', $backup_id);
+			if ($f_result !== 'ok') return 'error';
+
+			$s_result = (new ModelBackup)->mdlDeleteBackup('backup', $data_id);
+			if ($s_result !== 'ok') return 'error';
+		}
+
+		return 'ok';
+	}
+
+
+	static public function deleteDirectoryRecursive($dir) {
+		// Check if the path exists
+		if (!file_exists($dir)) {
+			echo "The file or directory does not exist: $dir\n";
+			return false;
+		}
+		$success = true;
+
+		if (is_file($dir)) {
+			// Attempt to delete a file
+			if (!unlink($dir)) {
+				echo "Error deleting file: $dir\n";
+				$success = false;
+			}
+		} elseif (is_dir($dir)) {
+			// Attempt to delete contents of the directory
+			$items = array_diff(scandir($dir), array('.', '..'));
+			foreach ($items as $item) {
+				$itemPath = $dir . DIRECTORY_SEPARATOR . $item;
+				if (!self::deleteDirectoryRecursive($itemPath)) {
+					$success = false;
+				}
+			}
+			// Attempt to delete the directory itself
+			if (!rmdir($dir)) {
+				echo "Error deleting directory: $dir\n";
+				$success = false;
+			}
+		}
+		return $success;
+	}
 
 }

@@ -56,7 +56,7 @@ class inventoryProcessing {
    public function showCompanySticker() {
     $branch = $_GET['branch'];
   // Check if the branch contains "MAIN HOLDING"
-if (stripos($branch, 'MAIN HOLDING') !== false) {
+if (stripos($branch, 'MAIN HOLDING') !== false AND $branch !== "EMB MAIN HOLDING") {
     // Your code here
     $branch = "MAIN HOLDING";
     $data = (new ControllerQRCode)->ctrGetLastStickerMain($branch);
@@ -122,6 +122,7 @@ if (stripos($branch, 'MAIN HOLDING') !== false) {
                 "EMB DANAO",
                 "EMB TUBIGON",
                 "EMB SIQUIJOR",
+                "EMB MAIN HOLDING",
                 "MAIN HOLDING / C&C",
                 "MAIN HOLDING / MIS",
                 "MAIN HOLDING / HROM",
@@ -175,11 +176,26 @@ if (stripos($branch, 'MAIN HOLDING') !== false) {
                     "SGI",
                     "PSPMI HOLDING",
                     "IC BUILDING",
+                    "MANVILLE",
+                    "A&E JAMERO",
+                    "BURI ROAD",
                 ];
                 break;
             case "UBUNTU":
                 $branches = [
                     "UBUNTU",
+                ];
+                break;
+
+                case "NORNS":
+                    $branches = [
+                        "NORNS",
+                    ];
+                    break;
+
+            case "LIKHAIN":
+                $branches = [
+                    "LIKHAIN",
                 ];
                 break;
 

@@ -145,19 +145,19 @@ class ModelPermit{
 			if($filter == null){
 				$stmt = (new Connection)->connect()->prepare("SELECT * FROM working_permit
                 WHERE (
-                    wp_from = 4 AND `type` = :typeFilter
+                    wp_from IN (4, 10, 11) AND `type` = :typeFilter
                     AND `status` NOT IN ('Done', 'Rejected')
                 )
                 OR (
                     DATE(STR_TO_DATE(wp_date, '%M %d %Y %h:%i:%s%p')) = :currentDate
-                    AND wp_from = 4 AND `type` = :typeFilter
+                    AND wp_from IN (4, 10, 11) AND `type` = :typeFilter
                 )
                 ORDER BY id DESC");
 				$stmt->bindParam(":typeFilter", $typeFilter, PDO::PARAM_STR);
 				$stmt->bindParam(":currentDate", $currentDate, PDO::PARAM_STR);
 			}else{
 				$stmt = (new Connection)->connect()->prepare("SELECT * FROM working_permit 
-				WHERE wp_from = 4 AND
+				WHERE wp_from IN (4, 10, 11) AND
 				 (DATE(STR_TO_DATE(wp_date, '%M %d %Y %h:%i:%s%p')) = :filter AND `type` = :typeFilter)
 				ORDER BY id DESC");
 				$stmt->bindParam(":typeFilter", $typeFilter, PDO::PARAM_STR);
@@ -659,7 +659,7 @@ class ModelPermit{
 				SUM(CASE WHEN type = 'MIS' THEN 1 ELSE 0 END) AS total_mis
 				FROM working_permit 
 				WHERE
-				(wp_from = 4)
+				(wp_from IN (4, 10, 11))
 					AND 
 				(`status` != 'Done' AND `status` != 'Rejected' )
 			");
@@ -815,6 +815,7 @@ class ModelPermit{
 
 	static public function mdlShowNotification($type){
 		$username = $_SESSION['username'];
+		$user_id = $_SESSION['user_id'];
 		$currentDate = date('Y-m-d');
 		if($type === "wp_accounting"){
 			$stmt = (new Connection)->connect()->prepare("SELECT * FROM working_permit
@@ -848,7 +849,7 @@ class ModelPermit{
 		$stmt = (new Connection)->connect()->prepare("SELECT * FROM working_permit
 			WHERE
 			(
-				(wp_from = 4)
+				( wp_from IN (4, 10, 11))
 				  AND 
 				(`status` != 'Done' AND `status` != 'Rejected' )
 			)
@@ -956,6 +957,15 @@ class ModelPermit{
 				
 				ORDER BY type ASC, id DESC");
 		}
+		elseif($type === "wp_user"){
+			$stmt = (new Connection)->connect()->prepare("SELECT * FROM working_permit
+					WHERE
+						user_id = :user_id 
+							AND
+						(`status` != 'Done' AND `status` != 'Rejected')"
+					);
+					$stmt ->bindParam(":user_id", $user_id, PDO::PARAM_STR);
+			}
 		else{
 			$stmt = (new Connection)->connect()->prepare("SELECT * FROM working_permit ORDER BY id DESC");
 		}

@@ -1,0 +1,6 @@
+.htaccess
+vendor/
+views/files/
+views/img/
+data_backups/
+

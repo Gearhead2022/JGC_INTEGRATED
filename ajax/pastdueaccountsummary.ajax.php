@@ -71,6 +71,8 @@ class reportTable{
             $data = (new ControllerPastdue)->ctrPastDueSummaryFCHNegross();
         } elseif ($branch_name_input === 'FCHM') {
             $data = (new ControllerPastdue)->ctrPastDueSummaryFCHManilas();
+        } elseif ($branch_name_input === 'FCHA') {
+            $data = (new ControllerPastdue)->ctrPastDueSummaryFCHAntipolos();
         } else{
             $data = (new ControllerPastdue)->ctrPastDueSummarys($branch_name_input);
         }

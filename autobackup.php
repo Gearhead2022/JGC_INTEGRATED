@@ -22,13 +22,13 @@ $host = 'localhost';
 $user = 'django_user';
 $pass = 'djangodbpass';
 
-$databases = ['emb_appform2', 'dtr_fr_db', 'jgc_dtr_db', 'nah_db', 'sgi_db'];
+$databases = ['emb_appform2', 'dtr_fr_db', 'jgc_dtr_db', 'nah_db', 'sgi_db', 'fleet_management'];
 
 date_default_timezone_set('Asia/Manila');
 $year = date("Y");
 $month = date("M");
 $day = date("d");
-$backupDir = __DIR__ . "/backups/{$year}/{$month}/{$day}";
+$backupDir = __DIR__ . "/data_backups/{$year}/{$month}/{$day}";
 
 if (!is_dir($backupDir)) {
     mkdir($backupDir, 0777, true);

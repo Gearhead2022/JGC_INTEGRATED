@@ -1,6 +1,7 @@
 views/files/
 views/img/
-backups/
+data_backups/
+vendor/
 *.zip
 *.pdf
 *.rar

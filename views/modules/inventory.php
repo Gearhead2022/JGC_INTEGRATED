@@ -700,6 +700,8 @@ $branches = [
                                     <option value="RFC">RFC</option>
                                     <option value="PSPMI">PSPMI</option>
                                     <option value="UBUNTU">UBUNTU</option>
+                                    <option value="NORNS">NORNS</option>
+                                    <option value="LIKHAIN">LIKHAIN</option>
                                 </select>
                             </div>
                             <div class="col-sm-4 form-group">
@@ -898,6 +900,7 @@ $branches = [
                                     <option value="RFC">RFC</option>
                                     <option value="PSPMI">PSPMI</option>
                                     <option value="UBUNTU">UBUNTU</option>
+                                    <option value="NORNS">NORNS</option>
                                 </select>
                         </div>
                              <div class="col-sm-4 form-group">

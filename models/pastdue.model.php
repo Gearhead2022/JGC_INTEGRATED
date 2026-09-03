@@ -63,7 +63,7 @@ class ModelPastDue{
 	
 
 	    $stmt = (new Connection)->connect()->prepare("SELECT branch_name as full_name FROM branch_names 
-        WHERE branch_name LIKE 'FCH%' AND branch_name = 'FCH PARANAQUE' OR branch_name  =  'FCH MUNTINLUPA' OR branch_name  =  'FCH ANTIPOLO' ");
+        WHERE branch_name LIKE 'FCH%' AND branch_name = 'FCH PARANAQUE' OR branch_name  =  'FCH MUNTINLUPA'  ");
 	
 		$stmt -> execute();
 		return $stmt -> fetchAll(); 
@@ -931,7 +931,7 @@ static public function mdlPastDueSummaryFCHNegros($branch_name_input,$dateFromMo
 
 static public function mdlPastDueSummaryFCHManila($branch_name_input,$dateFromMonth,$dateStart){
     $stmt = (new Connection)->connect()->prepare("SELECT branch_name FROM branch_names 
-    WHERE branch_name LIKE '%FCH%' AND branch_name != 'FCH BACOLOD' AND branch_name != 'FCH SILAY' AND branch_name != 'FCH BAGO' AND branch_name != 'FCH MURCIA' AND branch_name != 'FCH BINALBAGAN' AND branch_name != 'FCH HINIGARAN' AND branch_name != 'FCH LAPU LAPU' AND branch_name != 'FCH SIQUIJOR' ORDER BY id");
+    WHERE branch_name LIKE '%FCH%' AND branch_name != 'FCH BACOLOD' AND branch_name != 'FCH SILAY' AND branch_name != 'FCH BAGO' AND branch_name != 'FCH MURCIA' AND branch_name != 'FCH ANTIPOLO' AND branch_name != 'FCH BINALBAGAN' AND branch_name != 'FCH HINIGARAN' AND branch_name != 'FCH LAPU LAPU' AND branch_name != 'FCH SIQUIJOR' ORDER BY id");
     $stmt -> execute();
     return $stmt -> fetchAll();
     $stmt -> close();
@@ -940,7 +940,17 @@ static public function mdlPastDueSummaryFCHManila($branch_name_input,$dateFromMo
 
 
 
+    // fch antipolo
 
+
+    static public function mdlPastDueSummaryFCHAntipolo($branch_name_input,$dateFromMonth,$dateStart){
+        $stmt = (new Connection)->connect()->prepare("SELECT branch_name FROM branch_names 
+        WHERE branch_name = 'FCH ANTIPOLO' ORDER BY id");
+        $stmt -> execute();
+        return $stmt -> fetchAll();
+        $stmt -> close();
+        $stmt = null;
+    }
 
 
 // get branch name a
@@ -968,13 +978,13 @@ static public function mdlPastDueSummaryFCHManila($branch_name_input,$dateFromMo
     static public function mdlTotalOfAmountDecease_S($branch_name_input,$dateFromMonth,$dateStart){
         $stmt = (new Connection)->connect()->prepare("SELECT
         (SELECT COUNT(type) FROM past_due WHERE (branch_name LIKE '%$branch_name_input%' AND type = 'S' AND class = 'D' AND refdate <= '$dateFromMonth') OR (branch_name = '$branch_name_input' AND type = 'S' AND status = 'D' AND date_change > '$dateFromMonth' AND refdate <= '$dateFromMonth')) AS total_S,
-        (SELECT -SUM(balance) FROM past_due WHERE (branch_name LIKE '%$branch_name_input%' AND type = 'S' AND class = 'D' AND refdate <= '$dateFromMonth') OR (branch_name = '$branch_name_input' AND type = 'S' AND status = 'D' AND date_change > '$dateFromMonth' AND refdate <= '$dateFromMonth')) AS total_balance,
-        (SELECT SUM(pdl.debit) FROM past_due_ledger pdl INNER JOIN past_due pd ON pdl.account_no = pd.account_no AND pdl.branch_name = pd.branch_name INNER JOIN branch_names bn ON bn.branch_name = pd.branch_name WHERE (pd.type = 'S' AND pd.class = 'D' AND pd.refdate <= '$dateFromMonth' AND pdl.date <= '$dateFromMonth' AND bn.branch_name LIKE '%$branch_name_input%') OR (bn.branch_name = '$branch_name_input' AND pd.type = 'S' AND pd.status = 'D' AND pd.date_change > '$dateFromMonth' AND bn.branch_name LIKE '%$branch_name_input%' AND refdate <= '$dateFromMonth')) AS total_debit,
-        (SELECT SUM(pdl.credit) FROM past_due_ledger pdl INNER JOIN past_due pd ON pdl.account_no = pd.account_no AND pdl.branch_name = pd.branch_name INNER JOIN branch_names bn ON bn.branch_name = pd.branch_name WHERE (pd.type = 'S' AND pd.class = 'D' AND pd.refdate <= '$dateFromMonth' AND pdl.date <= '$dateFromMonth' AND bn.branch_name LIKE '%$branch_name_input%') OR (bn.branch_name = '$branch_name_input' AND pd.type = 'S' AND pd.status = 'D' AND pd.date_change > '$dateFromMonth' AND bn.branch_name LIKE '%$branch_name_input%' AND refdate <= '$dateFromMonth')) AS total_credit,
+        (SELECT -COALESCE(SUM(balance), 0) FROM past_due WHERE (branch_name LIKE '%$branch_name_input%' AND type = 'S' AND class = 'D' AND refdate <= '$dateFromMonth') OR (branch_name = '$branch_name_input' AND type = 'S' AND status = 'D' AND date_change > '$dateFromMonth' AND refdate <= '$dateFromMonth')) AS total_balance,
+        (SELECT COALESCE(SUM(pdl.debit), 0) FROM past_due_ledger pdl INNER JOIN past_due pd ON pdl.account_no = pd.account_no AND pdl.branch_name = pd.branch_name INNER JOIN branch_names bn ON bn.branch_name = pd.branch_name WHERE (pd.type = 'S' AND pd.class = 'D' AND pd.refdate <= '$dateFromMonth' AND pdl.date <= '$dateFromMonth' AND bn.branch_name LIKE '%$branch_name_input%') OR (bn.branch_name = '$branch_name_input' AND pd.type = 'S' AND pd.status = 'D' AND pd.date_change > '$dateFromMonth' AND bn.branch_name LIKE '%$branch_name_input%' AND refdate <= '$dateFromMonth')) AS total_debit,
+        (SELECT COALESCE(SUM(pdl.credit), 0) FROM past_due_ledger pdl INNER JOIN past_due pd ON pdl.account_no = pd.account_no AND pdl.branch_name = pd.branch_name INNER JOIN branch_names bn ON bn.branch_name = pd.branch_name WHERE (pd.type = 'S' AND pd.class = 'D' AND pd.refdate <= '$dateFromMonth' AND pdl.date <= '$dateFromMonth' AND bn.branch_name LIKE '%$branch_name_input%') OR (bn.branch_name = '$branch_name_input' AND pd.type = 'S' AND pd.status = 'D' AND pd.date_change > '$dateFromMonth' AND bn.branch_name LIKE '%$branch_name_input%' AND refdate <= '$dateFromMonth')) AS total_credit,
         (
-        (SELECT -SUM(balance) FROM past_due WHERE (branch_name = '$branch_name_input' AND refdate <= '$dateFromMonth' AND type = 'S' AND class = 'D') OR (branch_name = '$branch_name_input' AND type = 'S' AND status = 'D' AND date_change > '$dateFromMonth')) +
-        (SELECT SUM(pdl.debit) FROM past_due_ledger pdl INNER JOIN past_due pd ON pdl.account_no = pd.account_no AND pdl.branch_name = pd.branch_name INNER JOIN branch_names bn ON bn.branch_name = pd.branch_name WHERE (pd.type = 'S' AND pd.class = 'D' AND pd.refdate <= '$dateFromMonth' AND pdl.date <= '$dateFromMonth' AND bn.branch_name = '$branch_name_input') OR (bn.branch_name = '$branch_name_input' AND pd.type = 'S' AND pd.status = 'D' AND pd.date_change > '$dateFromMonth' AND bn.branch_name = '$branch_name_input' AND refdate <= '$dateFromMonth'))  +
-        (SELECT SUM(pdl.credit) FROM past_due_ledger pdl INNER JOIN past_due pd ON pdl.account_no = pd.account_no AND pdl.branch_name = pd.branch_name INNER JOIN branch_names bn ON bn.branch_name = pd.branch_name WHERE (pd.type = 'S' AND pd.class = 'D' AND pd.refdate <= '$dateFromMonth' AND pdl.date <= '$dateFromMonth' AND bn.branch_name = '$branch_name_input') OR (bn.branch_name = '$branch_name_input' AND pd.type = 'S' AND pd.status = 'D' AND pd.date_change > '$dateFromMonth' AND bn.branch_name = '$branch_name_input' AND refdate <= '$dateFromMonth'))
+        (SELECT -COALESCE(SUM(balance), 0 ) FROM past_due WHERE (branch_name = '$branch_name_input' AND refdate <= '$dateFromMonth' AND type = 'S' AND class = 'D') OR (branch_name = '$branch_name_input' AND type = 'S' AND status = 'D' AND date_change > '$dateFromMonth')) +
+        (SELECT COALESCE(SUM(pdl.debit), 0 ) FROM past_due_ledger pdl INNER JOIN past_due pd ON pdl.account_no = pd.account_no AND pdl.branch_name = pd.branch_name INNER JOIN branch_names bn ON bn.branch_name = pd.branch_name WHERE (pd.type = 'S' AND pd.class = 'D' AND pd.refdate <= '$dateFromMonth' AND pdl.date <= '$dateFromMonth' AND bn.branch_name = '$branch_name_input') OR (bn.branch_name = '$branch_name_input' AND pd.type = 'S' AND pd.status = 'D' AND pd.date_change > '$dateFromMonth' AND bn.branch_name = '$branch_name_input' AND refdate <= '$dateFromMonth'))  +
+        (SELECT COALESCE(SUM(pdl.credit), 0) FROM past_due_ledger pdl INNER JOIN past_due pd ON pdl.account_no = pd.account_no AND pdl.branch_name = pd.branch_name INNER JOIN branch_names bn ON bn.branch_name = pd.branch_name WHERE (pd.type = 'S' AND pd.class = 'D' AND pd.refdate <= '$dateFromMonth' AND pdl.date <= '$dateFromMonth' AND bn.branch_name = '$branch_name_input') OR (bn.branch_name = '$branch_name_input' AND pd.type = 'S' AND pd.status = 'D' AND pd.date_change > '$dateFromMonth' AND bn.branch_name = '$branch_name_input' AND refdate <= '$dateFromMonth'))
         ) AS result
         ");
     $stmt -> execute();
@@ -1102,11 +1112,31 @@ static public function mdlPastDueSummaryFCHManila($branch_name_input,$dateFromMo
         $stmt -> close();   
         $stmt = null;
     }
+
+    static public function mdlShowFCHABranches(){
+
+	    $stmt = (new Connection)->connect()->prepare("SELECT branch_name as full_name FROM branch_names 
+        WHERE  branch_name  =  'FCH ANTIPOLO' ");
+		$stmt -> execute();
+		return $stmt -> fetchAll(); 
+		$stmt -> close();
+		$stmt = null;
+	}
     
     static public function mdlPastDueSummaryFCHManilas(){
         
         $stmt = (new Connection)->connect()->prepare("SELECT branch_name FROM `branch_names` WHERE branch_name = 'FCH MUNTINLUPA' 
-        or branch_name = 'FCH PARANAQUE' or branch_name = 'FCH ANTIPOLO' ");
+        or branch_name = 'FCH PARANAQUE' ");
+    
+        $stmt -> execute();
+        return $stmt -> fetchAll();
+        $stmt -> close();   
+        $stmt = null;
+    }
+
+    static public function mdlPastDueSummaryFCHAntipolos(){
+        
+        $stmt = (new Connection)->connect()->prepare("SELECT branch_name FROM `branch_names` WHERE branch_name = 'FCH ANTIPOLO'");
     
         $stmt -> execute();
         return $stmt -> fetchAll();

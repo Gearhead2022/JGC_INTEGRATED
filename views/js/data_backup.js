@@ -1,11 +1,11 @@
 $('.dataBackupTable').DataTable({
-    "ajax": "ajax/dataBackup.ajax.php", 
+    "ajax": "ajax/dataBackup.ajax.php",
     "deferRender": true,
     "retrieve": true,
     "processing": true,
     "order": [4, 'asc'],
     "iDisplayLength": 25
-  });
+});
 
 $(document).on("click", ".downloadFile", function () {
     var data_id = $(this).attr("data_id");
@@ -18,7 +18,7 @@ $(document).on("click", ".downloadFile", function () {
         cancelButtonColor: '#d33',
         cancelButtonText: 'cancel',
         confirmButtonText: 'Yes'
-    }).then(function(result){
+    }).then(function (result) {
         if (result.value) {
             swal({
                 title: "Please wait...",
@@ -65,14 +65,14 @@ $(document).on("click", ".deleteFile", function () {
         cancelButtonColor: '#d33',
         cancelButtonText: 'Cancel',
         confirmButtonText: 'Yes'
-    }).then(function(result) {
+    }).then(function (result) {
         if (result.value) {
             $.ajax({
                 url: 'email/delete_backup.php',
                 method: 'POST',
                 dataType: 'json',
                 data: { data_id: data_id },
-                success: function(response) {
+                success: function (response) {
                     if (response.status === 'ok') {
                         console.log(response);
                         swal('Deleted!', 'The backup file has been deleted.', 'success');
@@ -81,7 +81,7 @@ $(document).on("click", ".deleteFile", function () {
                         swal('Error', response.message || 'Deletion failed.', 'error');
                     }
                 },
-                error: function() {
+                error: function () {
                     swal('Error', 'AJAX request failed.', 'error');
                 }
             });
@@ -95,5 +95,4 @@ $(document).on("click", ".deleteFile", function () {
 
 
 
-  
-   
+

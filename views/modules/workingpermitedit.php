@@ -1,6 +1,6 @@
 <?php
 
-
+$user_id = $_SESSION['user_id'] ?? null;
  $idClient = $_GET['idClient'];
 
  $clients = (new Connection)->connect()->query("SELECT * FROM working_permit WHERE id = $idClient")->fetch(PDO::FETCH_ASSOC);
@@ -15,6 +15,7 @@
  $wp_app_by = $clients['wp_app_by'];
  $wp_app_by1 = $clients['wp_app_by1'];
  $request_level = $clients['request_level'];
+ $permit_type = $clients['type'];
  $table ="permit_files"; 
  $chk = $clients['chk'];
  $app1 = $clients['app1'];
@@ -204,6 +205,7 @@ textarea#wp_req_for {
                              || $user == "wp_credit"
                              || $user == "wp_grcd"
                              || $user == "wp_pspmi" 
+                             || ($user_id === "UI00098" && $permit_type === "PSPMI")
                              ){ 
                               
                               if($wp_from != 8 && $user == "wp_pspmi" && $type == "PSPMI"){ ?>

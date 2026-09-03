@@ -171,6 +171,7 @@ class reportTable{
             $data = (new ControllerPastdue)->ctrShowEMBBranches();
             $dataFCHN = (new ControllerPastdue)->ctrShowFCHNBranches();
             $dataFCHM = (new ControllerPastdue)->ctrShowFCHMBranches();
+            $dataFCHA = (new ControllerPastdue)->ctrShowFCHABranches();
             $dataRLC = (new ControllerPastdue)->ctrShowRLCBranches();
             $dataELC = (new ControllerPastdue)->ctrShowELCBranches();
             $html = '';
@@ -600,7 +601,7 @@ class reportTable{
                                 $final_total2 = -1 * $result1;
                             }
                             // $count = $count + $total_w1 + $total_f1 ; 
-                            //$final_total2 = $final_total2 + $total_pdr_written1;
+                            $final_total2 = $final_total2 + $total_pdr_written1;
         
                         $formatted_amount = number_format($final_total2, 2, '.',',');
                         $total_ssp = $count + $total_gb1 - $total_f1 - $total_w1;
@@ -831,7 +832,7 @@ class reportTable{
                                 $final_total2 = -1 * $result1;
                             }
                             // $count = $count + $total_w1 + $total_f1 ; 
-                            //$final_total2 = $final_total2 + $total_pdr_written1;
+                            $final_total2 = $final_total2 + $total_pdr_written1;
         
                         $formatted_amount = number_format($final_total2, 2, '.',',');
                         $total_ssp = $count + $total_gb1 - $total_f1 - $total_w1;
@@ -924,6 +925,223 @@ class reportTable{
                             $emb_grandtotalSSP+= $emb_subtotalSSP;
                             $emb_grandtotalBadAccs+= $emb_subtotalBadAccs;
 
+
+
+
+
+                            $emb_subTotalAcc1 = 0;
+                            $emb_subTotalPDR = 0;
+                            $emb_subGtB = 0;
+                            $emb_subTotalAmountGB = 0;
+                            $emb_subTotalMisc= 0;
+                            $emb_subTotalWrittenOff= 0;
+                            $emb_subTotalAmountWrittenOff= 0;
+                            $emb_subTotalFullyPaid= 0;
+                            $emb_subtotalCollection= 0;
+                            $emb_subtotalSSP= 0;
+                            $emb_subtotalBadAccs= 0;
+                        
+                            foreach ($dataFCHA as $item11) {
+                                $branch_name = $item11['full_name'];
+                                
+                
+                                $goodToBad = (new ControllerPastdue)->ctrGetAllGoodToBad($branch_name, $month, $lastDay);
+                                $total_debit = 0;
+                                foreach ($goodToBad as $item3) {
+                                    $account_no = $item3['account_no'];
+                                    $balance = $item3['balance'];
+                                    $refdate = $item3['refdate'];
+                
+                                    if($balance == 0){
+                                        $goodToBad1 = (new ControllerPastdue)->ctrGetAllGoodToBad1($account_no, $branch_name, $refdate);
+                                        foreach ($goodToBad1 as $item4) {
+                                            $debit = $item4['debit'];
+                                        }
+                                        $total_debit += $debit;
+                
+                                    }
+                                    
+                                }
+                
+                                $getMisc = (new ControllerPastdue)->ctrGetMiscellaneous($branch_name, $month, $lastDay);
+                                if(!empty($getMisc)){
+                                    foreach ($getMisc as $item5) {
+                                        $mis_debit = $item5['debit'];
+                                        $mis_debit1 = abs($item5['debit']);
+                                    }
+                                }else{
+                                    $mis_debit = "";
+                                }
+                                if($mis_debit == 0){
+                                    $mis_debit = "";
+                                }else{
+                                    $mis_debit = number_format(abs($item5['debit']) , 2, '.',',');
+                                }
+                
+                                $total_gb = count($goodToBad);
+                                $total_gb1 = count($goodToBad);
+                
+                                if($total_gb == 0){
+                                    $total_gb = "";
+                                }   
+                
+                
+                                if($total_debit <0){
+                                    $total_amount_gb = abs($total_debit);
+                                    $emb_subTotalAmountGB += $total_amount_gb;
+                                }else{
+                                    $total_amount_gb = $total_debit * -1;
+                                    $emb_subTotalAmountGB += $total_amount_gb;
+                                }
+                
+                
+                                if($total_amount_gb != 0){
+                                    $formatted_total_amount_gb = number_format($total_amount_gb, 2, '.',',');
+                                }else{
+                                    $formatted_total_amount_gb ="";
+                                }
+                
+                               
+                
+                
+                                    // Start For PDR WRITTEN OFF
+                                    $getPDRWrittenOff = (new ControllerPastdue)->ctrGetPDRWrittenOff($branch_name, $month, $lastDay);
+                                    if(!empty($getPDRWrittenOff)){
+                                    foreach ($getPDRWrittenOff as $item6) {
+                                        $total_w = $item6['total_w'];
+                                        $total_w1 = $item6['total_w'];
+                                        $total_pdr_written1 = abs($item6['result']);
+                                        $total_pdr_written = abs($item6['result']);
+                                    }
+                
+                                    
+                                    if($total_pdr_written == 0){
+                                        $total_pdr_written ="";
+                                        $formatted_total_pdr_written = "";
+                                    }else{
+                                        $formatted_total_pdr_written = number_format($total_pdr_written1, 2, '.',',');
+                                    }
+                                        if($total_w == 0){
+                                            $total_w ="";
+                                        }
+                                }else{
+                                    $total_w ="";
+                                }
+                                // END PDR WRITTEN OFF
+                
+                                // Start PDR FullyPaid 
+                                $getFullyPaid = (new ControllerPastdue)->ctrGetFullyPaid($branch_name, $month, $lastDay);
+                                if(!empty($getFullyPaid)){
+                                    foreach ($getFullyPaid as $item7) {
+                                        $total_f = $item7['total_f'];
+                                        $total_f1 = $item7['total_f'];
+                                        $total_collection =  $item7['total_collection'];
+                                        $total_collection1 =  $item7['total_collection'];
+                                    }
+                
+                                    if($total_collection == 0){
+                                        $total_collection ="";
+                                        $formatted_total_collection = "";
+                                    }else{
+                                        $formatted_total_collection = number_format($total_collection, 2, '.',',');
+                                    }
+                
+                                    if($total_f == 0){
+                                        $total_f ="";
+                                    }
+                                }
+                                else{
+                                    $total_f ="";
+                                }
+                
+                                $badAccountslastMonth = (new ControllerPastdue)->ctrGetAllBadAccounts($branch_name, $lastMonth);
+                                foreach ($badAccountslastMonth as $item2) {
+                                    $count = $item2['total_Bad'];
+                                    $result = $item2['result'];
+                                }
+                
+                                $result1 = round($result, 2); // Round to 2 decimal places
+                
+                                    if ($result1 <0) {
+                                        $final_total2 = abs($result1);
+                                    }else{
+                                        $final_total2 = -1 * $result1;
+                                    }
+                                    // $count = $count + $total_w1 + $total_f1 ; 
+                                    $final_total2 = $final_total2 + $total_pdr_written1;
+                
+                                $formatted_amount = number_format($final_total2, 2, '.',',');
+                                $total_ssp = $count + $total_gb1 - $total_f1 - $total_w1;
+                                $total_BadAcc= ($final_total2 +$total_amount_gb) + $mis_debit1 - $total_collection1 - $total_pdr_written1;
+                                $formatted_total_BadAcc = number_format($total_BadAcc, 2, '.',',');
+
+      
+           
+                
+                                $emb_subTotalAcc1 += $count;
+                                $emb_subTotalPDR += $final_total2;
+                                $emb_subGtB += $total_gb1;
+                                $emb_subTotalMisc += $mis_debit1;
+                                $emb_subTotalWrittenOff += $total_w1;
+                                $emb_subTotalAmountWrittenOff += $total_pdr_written1;
+                                $emb_subTotalFullyPaid += $total_f1;
+                                $emb_subtotalCollection += $total_collection1;
+                                $emb_subtotalSSP += $total_ssp;
+                                $emb_subtotalBadAccs+= $total_BadAcc;
+                
+                                $html .= '<tr>
+                                            <td  style="color: #e69797;">'.$branch_name.'</td>
+                                            <td style="text-align: right;">'.$count.'</td>
+                                            <td style="text-align: right;">'.$formatted_amount.'</td>
+                                            <td style="text-align: right;">'.$total_gb.'</td>
+                                            <td style="text-align: right;">'.$formatted_total_amount_gb.'</td>
+                                            <td style="text-align: right;"></td>
+                                            <td style="text-align: right;">'.$mis_debit.'</td>
+                                            <td style="text-align: right;">'.$total_f.'</td>
+                                            <td style="text-align: right;">'.$formatted_total_collection.'</td>
+                                            <td style="text-align: right;">'.$total_w.'</td>
+                                            <td style="text-align: right;">'.$formatted_total_pdr_written.'</td>
+                                            <td style="text-align: right;">'.$total_ssp.'</td>
+                                            <td style="text-align: right;">'.$formatted_total_BadAcc.'</td>
+                                        </tr>
+                                            <tr>   
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                     </tr>
+
+                                        '
+                                        
+                                        ;
+
+                                        
+                
+                            }
+
+                                                                    
+            $emb_grandTotalAcc1 +=   $emb_subTotalAcc1;
+            $emb_grandTotalPDR += $emb_subTotalPDR;
+            $emb_grandGtB += $emb_subGtB;
+            $emb_grandTotalAmountGB += $emb_subTotalAmountGB;
+            $emb_grandTotalMisc+= $emb_subTotalMisc;
+            $emb_grandTotalWrittenOff+= $emb_subTotalWrittenOff;
+            $emb_grandTotalAmountWrittenOff+= $emb_subTotalAmountWrittenOff;
+            $emb_grandTotalFullyPaid+= $emb_subTotalFullyPaid;
+            $emb_grandtotalCollection+= $emb_subtotalCollection;
+            $emb_grandtotalSSP+= $emb_subtotalSSP;
+            $emb_grandtotalBadAccs+= $emb_subtotalBadAccs;
+
+                       
                      $emb_subTotalAcc1 = 0;
                     $emb_subTotalPDR = 0;
                     $emb_subGtB = 0;
@@ -1063,7 +1281,7 @@ class reportTable{
                                 $final_total2 = -1 * $result1;
                             }
                             // $count = $count + $total_w1 + $total_f1 ; 
-                            //$final_total2 = $final_total2 + $total_pdr_written1;
+                            $final_total2 = $final_total2 + $total_pdr_written1;
         
                         $formatted_amount = number_format($final_total2, 2, '.',',');
                         $total_ssp = $count + $total_gb1 - $total_f1 - $total_w1;
@@ -1080,7 +1298,6 @@ class reportTable{
                         $emb_subtotalCollection += $total_collection1;
                         $emb_subtotalSSP += $total_ssp;
                         $emb_subtotalBadAccs+= $total_BadAcc;
-			$branch_name = str_replace("RLC", "RFC", $branch_name);
         
                         $html .= '<tr>
                                     <td>'.$branch_name.'</td>
@@ -1114,7 +1331,7 @@ class reportTable{
                     
                     $html .= '
                         <tr>
-                            <td style="color: #e69797;">Sub Total - RFC</td>
+                            <td style="color: #e69797;">Sub Total - RLC</td>
                             <td style="text-align: right;">'.$formatted_subTotalAcc1.'</td>
                             <td style="text-align: right;">'.$formatted_subTotalPDR.'</td>
                             <td style="text-align: right;">'.$formatted_subGtB.'</td>
@@ -1295,7 +1512,7 @@ class reportTable{
                                         $final_total2 = -1 * $result1;
                                     }
                                     // $count = $count + $total_w1 + $total_f1 ; 
-                                    //$final_total2 = $final_total2 + $total_pdr_written1;
+                                    $final_total2 = $final_total2 + $total_pdr_written1;
                 
                                 $formatted_amount = number_format($final_total2, 2, '.',',');
                                 $total_ssp = $count + $total_gb1 - $total_f1 - $total_w1;

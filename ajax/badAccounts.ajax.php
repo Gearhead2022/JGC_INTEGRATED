@@ -19,7 +19,9 @@ class reportTable{
           $data = (new ControllerPastdue)->ctrPastDueSummaryFCHNegros($branch_name_input,$dateFromMonth,$dateStart );
       } elseif ($branch_name_input === 'FCHM') {
           $data = (new ControllerPastdue)->ctrPastDueSummaryFCHManila($branch_name_input, $dateFromMonth,$dateStart );
-      } else{
+      } elseif ($branch_name_input === 'FCHA') {
+        $data = (new ControllerPastdue)->ctrPastDueSummaryFCHAntipolo($branch_name_input, $dateFromMonth,$dateStart );
+        } else{
         $data = (new ControllerPastdue)->ctrBadAccounts($branch_name_input,$dateFromMonth,$dateStart);
       } 
         $grandtotal_S_Deceased = 0;

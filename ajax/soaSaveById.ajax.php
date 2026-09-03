@@ -3,6 +3,10 @@ require_once "../controllers/soa.controller.php";
 require_once "../models/soa.model.php";
 require_once "../views/modules/session.php";
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 $filterBackup= new reportTable();
 $filterBackup -> saveSOAData();
 
@@ -50,7 +54,9 @@ class reportTable{
             // Return 'error' if there is an issue adding the record
             echo 'no_records';
         } else {
-            echo 'error';
+            //echo 'error';
+            echo 'errorsss: ' . json_encode($response);
+            error_log("Error in save--: " . print_r($response, true));
         }
 
     }

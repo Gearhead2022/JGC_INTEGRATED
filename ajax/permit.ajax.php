@@ -45,6 +45,7 @@ foreach ($rows as $row) {
     $chkby = $row["chk"];
     $status = $row["status"];
     $wp_chk_by = $row["wp_chk_by"];
+    $permit_type = $row["type"];
 
     $chk = $chkby !== "Pending" ? "<span class='badge badge-success'>Approved</span>" : "<span class='badge badge-danger'>Pending</span>";
 
@@ -88,7 +89,9 @@ foreach ($rows as $row) {
         || $type === "wp_audit"
         || $type === "wp_credit"
         || $type === "wp_grcd"
-        || $type === "wp_pspmi") {
+        || $type === "wp_pspmi"
+        || ($user_id === "UI00098" && $permit_type === "PSPMI")
+        ) {
         $buttons .= "<button class='btn btn-sm btn-info btnEditClient' idClient='{$row["id"]}'>VERIFY</button>";
     }
     else {

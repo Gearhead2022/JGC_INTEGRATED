@@ -1,0 +1,84 @@
+services:
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    image: jgc-php:1.0.0
+    container_name: jgc-php
+    restart: unless-stopped
+
+    env_file:
+      - .env
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    ports:
+      - "127.0.0.1:8083:80"
+
+    volumes:
+      - ./:/var/www/html
+
+    networks:
+      - jgc-network
+
+
+  mysql:
+    image: mysql:8.1
+    container_name: jgc-mysql
+    restart: unless-stopped
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD --silent"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+    networks:
+      - jgc-network
+
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: jgc-phpmyadmin
+    restart: unless-stopped
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+
+    ports:
+      - "127.0.0.1:8084:80"
+
+    networks:
+      - jgc-network
+
+
+volumes:
+  mysql_data:
+
+
+networks:
+  jgc-network:
+    driver: bridge

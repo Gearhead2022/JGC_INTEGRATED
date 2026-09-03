@@ -1,3 +1,6 @@
+
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -295,7 +298,7 @@ if($mode=="dark"){?>
    <body class="bg-theme bg-theme7" data-user-type="<?= htmlspecialchars($type, ENT_QUOTES, 'UTF-8') ?>">
 <?php } ?>
 
-<?php if($type !== "backup_user"){?>
+<?php if($type !== "backup_user" && $type !== "inventory_user"){?>
     <div class="notification-main" id="notificationBox" onclick="openLedgerModal()">
       <div class="note-box" id="simulateBtn">
           <div class="counter">
@@ -360,6 +363,27 @@ if($mode=="dark"){?>
       if(isset($_GET["route"])){
              $user =  $_SESSION['type'];
              $pagenow =$_GET['route'];
+             $route1 = trim($_GET['route'] ?? '', '/');
+
+        //        echo '<pre>';
+        //       echo 'ROUTE: ';
+        //       var_dump($pagenow);
+        //       echo '</pre>';
+
+        //       echo '<pre>';
+
+        //     echo "REQUEST_URI:\n";
+        //     var_dump($_SERVER['REQUEST_URI']);
+
+        //     echo "\nRAW GET ROUTE:\n";
+        //     var_dump($_GET['route'] ?? null);
+
+        //     echo "\nTRIMMED ROUTE:\n";
+        //     $route1 = trim($_GET['route'] ?? '', '/');
+        //     var_dump($route1);
+
+        //     echo '</pre>';
+        //  exit;
 
             if(in_array( $pagenow, $wp_user )){
               // Now check the current user
@@ -383,105 +407,105 @@ if($mode=="dark"){?>
             }
 
 
-        if ($_GET["route"] == 'home' || 
-            $_GET["route"] == 'logout' ||
-            $_GET["route"] == 'registrations' ||
-            $_GET["route"] == 'clients' || 
-            $_GET["route"] == 'login' ||        
-            $_GET["route"] == 'clientadd' ||
-            $_GET["route"] == 'pspmi' ||
-            $_GET["route"] == 'fch' ||
-            $_GET["route"] == 'rlc' ||
-            $_GET["route"] == 'blacklist' || 
-            $_GET["route"] == 'blacklistadd' ||
-            $_GET["route"] == 'blacklistedit' ||
-            $_GET["route"] == 'workingpermitadd' ||
-            $_GET["route"] == 'workingpermit' ||
-            $_GET["route"] == 'workingpermitedit' ||
-            $_GET["route"] == 'showrequest' ||
-            $_GET["route"] == 'showrequests' ||
-            $_GET["route"] == 'requestadd' ||
-            $_GET["route"] == 'request' ||
-            $_GET["route"] == 'accounts' ||
-            $_GET["route"] == 'accountedit' ||
-            $_GET["route"] == 'requestedit' ||
-            $_GET["route"] == 'showbackup' ||
-            $_GET["route"] == 'backups' ||
-            $_GET["route"] == 'backupedit' ||
-            $_GET["route"] == 'backupadd' ||
-            $_GET["route"] == 'backupfilter' ||
-            $_GET["route"] == 'backupreport' ||
-            $_GET["route"] == 'fullypaid' ||
-            $_GET["route"] == 'fullypaidadd' ||
-            $_GET["route"] == 'fullypaidedit' ||
-            $_GET["route"] == 'fullypaidreport1' ||
-            $_GET["route"] == 'fullypaidreport2' ||
-            $_GET["route"] == 'showfullypaid' ||
-             $_GET["route"] == 'fullpaidreport' ||
-              $_GET["route"] == 'ticket' ||
-              $_GET["route"] == 'showTicketDetails' ||
-               $_GET["route"] == 'ticketarchive' ||
-            $_GET["route"] == 'download' ||
-             $_GET["route"] == 'documentadd' ||
-             $_GET["route"] == 'filesadd' ||
-            $_GET["route"] == 'try' ||
-             $_GET["route"] == 'operations' ||
-            $_GET["route"] == 'operationlsor' ||
-            $_GET["route"] == 'operationreport' ||
-            $_GET["route"] == 'operationlsoradd' ||
-            $_GET["route"] == 'operationlsoredit' ||
-            $_GET["route"] == 'operationlsorreport' ||
-            $_GET["route"] == 'operationreturnee' ||
-            $_GET["route"] == 'operationloansaging' ||
-            $_GET["route"] == 'checklistadd' ||
-            $_GET["route"] == 'adminStatistics' ||
-            $_GET["route"] == 'statistics' ||
-            $_GET["route"] == 'monthlyagentAdmin' ||
-            $_GET["route"] == 'monthlyagent' ||
-            $_GET["route"] == 'ChartmonthlyAgent' ||
-            $_GET["route"] == 'pastdueaccntsummary' ||
-            $_GET["route"] == 'adminPenStatistics' ||
-            $_GET["route"] == 'branchPenStatistics' ||
-            $_GET["route"] == 'branchPensionerList' ||
-            $_GET["route"] == 'operationSP' ||
-            $_GET["route"] == 'operationSPList' ||
-            $_GET["route"] == 'branchSP' ||
-            $_GET["route"] == 'operationAPH' ||
-            $_GET["route"] == 'operationACOME' ||
-            $_GET["route"] == 'branchAPH' ||
-            $_GET["route"] == 'insurance' ||
-            $_GET["route"] == 'branchAnnualTargetList' ||
-            $_GET["route"] == 'clientedit' ||
-            $_GET["route"] == 'branchDTRUpload' ||
-            $_GET["route"] == 'branchTimeInDTRUpload' ||
-            $_GET["route"] == 'hrDTRDownload' ||
-            $_GET["route"] == 'hrTimeInDTRDownLoad' ||
-            $_GET["route"] == 'access' ||
-            $_GET["route"] == 'branchReceiptPrinting' ||
-            $_GET["route"] == 'branchCollectionReceipt' ||
-            $_GET["route"] == 'sqltodbf' ||
-            $_GET["route"] == 'branchPDRColl' ||
-            $_GET["route"] == 'branchPDRCollArchive' ||
-            $_GET["route"] == 'branchPDRLedger' ||
-            $_GET["route"] == 'branchPDRShowLedger' ||
-            $_GET["route"] == 'branchSOA' ||
-            $_GET["route"] == 'pastdue'||
-     	      $_GET["route"] == 'ledger'||
-      	    $_GET["route"] == 'badaccounts'||
-       	    $_GET["route"] == 'pastdueaccntsummary'||
-      	    $_GET["route"] == 'pastdueadd'||
-      	    $_GET["route"] == 'pastdueclassreport'||
-            $_GET["route"] == 'pastdueedit'||
-     	      $_GET["route"] == 'pastdueledger'||
-      	    $_GET["route"] == 'pastduesummary'||
-      	    $_GET["route"] == 'pastduetarget'||
-      	    $_GET["route"] == 'pastdueweeklyreport'||
-            $_GET["route"] == 'showpastdue'||
-            $_GET["route"] == 'adminBackupDelete'||
-            $_GET["route"] == 'inventory' ||
-              $_GET["route"] == 'adminrequest' ||
-            $_GET["route"] == 'fernet' || 
-            $_GET["route"] == 'dataBackup'){
+        if ( $route1== 'home' || 
+             $route1== 'logout' ||
+             $route1== 'registrations' ||
+             $route1== 'clients' || 
+             $route1== 'login' ||        
+             $route1== 'clientadd' ||
+             $route1== 'pspmi' ||
+             $route1== 'fch' ||
+             $route1== 'rlc' ||
+             $route1== 'blacklist' || 
+             $route1== 'blacklistadd' ||
+             $route1== 'blacklistedit' ||
+             $route1== 'workingpermitadd' ||
+             $route1== 'workingpermit' ||
+             $route1== 'workingpermitedit' ||
+             $route1== 'showrequest' ||
+             $route1== 'showrequests' ||
+             $route1== 'requestadd' ||
+             $route1== 'request' ||
+             $route1== 'accounts' ||
+             $route1== 'accountedit' ||
+             $route1== 'requestedit' ||
+             $route1== 'showbackup' ||
+             $route1== 'backups' ||
+             $route1== 'backupedit' ||
+             $route1== 'backupadd' ||
+             $route1== 'backupfilter' ||
+             $route1== 'backupreport' ||
+             $route1== 'fullypaid' ||
+             $route1== 'fullypaidadd' ||
+             $route1== 'fullypaidedit' ||
+             $route1== 'fullypaidreport1' ||
+             $route1== 'fullypaidreport2' ||
+             $route1== 'showfullypaid' ||
+              $route1== 'fullpaidreport' ||
+               $route1== 'ticket' ||
+               $route1== 'showTicketDetails' ||
+                $route1== 'ticketarchive' ||
+             $route1== 'download' ||
+              $route1== 'documentadd' ||
+              $route1== 'filesadd' ||
+             $route1== 'try' ||
+              $route1== 'operations' ||
+             $route1== 'operationlsor' ||
+             $route1== 'operationreport' ||
+             $route1== 'operationlsoradd' ||
+             $route1== 'operationlsoredit' ||
+             $route1== 'operationlsorreport' ||
+             $route1== 'operationreturnee' ||
+             $route1== 'operationloansaging' ||
+             $route1== 'checklistadd' ||
+             $route1== 'adminStatistics' ||
+             $route1== 'statistics' ||
+             $route1== 'monthlyagentAdmin' ||
+             $route1== 'monthlyagent' ||
+             $route1== 'ChartmonthlyAgent' ||
+             $route1== 'pastdueaccntsummary' ||
+             $route1== 'adminPenStatistics' ||
+             $route1== 'branchPenStatistics' ||
+             $route1== 'branchPensionerList' ||
+             $route1== 'operationSP' ||
+             $route1== 'operationSPList' ||
+             $route1== 'branchSP' ||
+             $route1== 'operationAPH' ||
+             $route1== 'operationACOME' ||
+             $route1== 'branchAPH' ||
+             $route1== 'insurance' ||
+             $route1== 'branchAnnualTargetList' ||
+             $route1== 'clientedit' ||
+             $route1== 'branchDTRUpload' ||
+             $route1== 'branchTimeInDTRUpload' ||
+             $route1== 'hrDTRDownload' ||
+             $route1== 'hrTimeInDTRDownLoad' ||
+             $route1== 'access' ||
+             $route1== 'branchReceiptPrinting' ||
+             $route1== 'branchCollectionReceipt' ||
+             $route1== 'sqltodbf' ||
+             $route1== 'branchPDRColl' ||
+             $route1== 'branchPDRCollArchive' ||
+             $route1== 'branchPDRLedger' ||
+             $route1== 'branchPDRShowLedger' ||
+             $route1== 'branchSOA' ||
+             $route1== 'pastdue'||
+     	       $route1== 'ledger'||
+      	     $route1== 'badaccounts'||
+       	     $route1== 'pastdueaccntsummary'||
+      	     $route1== 'pastdueadd'||
+      	     $route1== 'pastdueclassreport'||
+             $route1== 'pastdueedit'||
+     	       $route1== 'pastdueledger'||
+      	     $route1== 'pastduesummary'||
+      	     $route1== 'pastduetarget'||
+      	     $route1== 'pastdueweeklyreport'||
+             $route1== 'showpastdue'||
+             $route1== 'adminBackupDelete'||
+             $route1== 'inventory' ||
+               $route1== 'adminrequest' ||
+             $route1== 'fernet' || 
+             $route1== 'dataBackup'){
                 
           include "modules/".$_GET["route"].".php";
         }else{
@@ -548,7 +572,7 @@ if($mode=="dark"){?>
   <script src="views/js/clients.js"></script>
   <script src="views/js/account.js"></script>
   <script src="views/js/request.js"></script>
-  <script src="views/js/permit.js?v=1.0.0"></script>
+  <script src="views/js/permit.js?v=2.0.0"></script>
   <script src="views/js/blacklist.js"></script>
   <script src="views/js/rlc.js"></script>
   <script src="views/js/pspmi.js"></script>
