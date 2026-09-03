@@ -31,6 +31,7 @@ error_reporting=E_ALL & ~E_DEPRECATED & ~E_NOTICE\n" \
 > /usr/local/etc/php/conf.d/app.ini
 
 
+
 # Enable Apache rewrite for MVC routing / .htaccess
 RUN a2enmod rewrite
 
@@ -42,7 +43,19 @@ RUN printf '<Directory /var/www/html>\n\
 </Directory>\n' > /etc/apache2/conf-available/app.conf \
     && a2enconf app
 
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
 WORKDIR /var/www/html
+
+COPY composer.json composer.lock ./
+
+
+RUN composer install \
+    --no-dev \
+    --prefer-dist \
+    --no-interaction \
+    --no-progress \
+    --optimize-autoloader
 
 COPY . /var/www/html
 
