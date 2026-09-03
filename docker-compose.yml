@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
 
-    image: jgc-php:1.0.0
+    image: jgc-php:stable
     container_name: jgc-php
     restart: unless-stopped
 
