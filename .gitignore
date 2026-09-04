@@ -7,3 +7,4 @@ vendor/
 *.rar
 *.7z
 *.mp4
+docker-compose.yml
