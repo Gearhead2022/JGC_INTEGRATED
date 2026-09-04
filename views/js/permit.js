@@ -222,7 +222,7 @@ function openLedgerModal() {
       const status = item.status;
       const formattedDate = item.wp_date.split(' ').slice(0, 3).join(' ');
       let btn ="";
-      let $statusDisplay = "";
+      let statusDisplay = "";
         if( type === "wp_accounting" 
             || type === "wp_operation"
             || type === "wp_hrom" 
