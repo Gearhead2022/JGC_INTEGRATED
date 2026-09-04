@@ -149,79 +149,155 @@ class ControllerQRCode{
             }
     }
     static public function ctrCreateItemQRCode($id_holder) {
-        // Set QR code options
-        $options = new QROptions([
-            'eccLevel' => QRCode::ECC_H,       // High error correction level for better resilience
-            'outputType' => QRCode::OUTPUT_IMAGE_PNG,
-            'imageBase64' => false,
-            'scale' => 10,                     // Adjust scale for desired QR code size
-        ]);
-    
-        // Generate QR code
-        $qrcode = new QRCode($options);
-        $qrImage = $qrcode->render($id_holder);
-    
-        // Create an image resource from the generated QR code
-        $qrImageResource = imagecreatefromstring($qrImage);
-    
-        // Load the logo image
-        $logo = imagecreatefrompng('views/img/JGC.png'); // Update with the correct path to your logo
-    
-        // Get dimensions of the QR code and the logo
-        $qrWidth = imagesx($qrImageResource);
-        $qrHeight = imagesy($qrImageResource);
-        $logoWidth = imagesx($logo);
-        $logoHeight = imagesy($logo);
-    
-        // Calculate the size and position of the clear area in the center of the QR code
-        $clearAreaSize = min($qrWidth, $qrHeight) * 0.2; // Clear area is 20% of the QR code size
-        $clearAreaX = ($qrWidth - $clearAreaSize) / 2;
-        $clearAreaY = ($qrHeight - $clearAreaSize) / 2;
-    
-        // Draw a white rectangle in the center to create a clear area for the logo
-        $backgroundColor = imagecolorallocate($qrImageResource, 255, 255, 255); // White background
-        imagefilledrectangle($qrImageResource, $clearAreaX, $clearAreaY, $clearAreaX + $clearAreaSize, $clearAreaY + $clearAreaSize, $backgroundColor);
-    
-        // Scale the logo to fit within the clear area, maintaining aspect ratio
-        $maxLogoSize = $clearAreaSize * 0.8; // Logo should occupy 80% of the clear area
-        if ($logoWidth > $maxLogoSize || $logoHeight > $maxLogoSize) {
-            // Calculate new logo dimensions while maintaining aspect ratio
-            $scale = min($maxLogoSize / $logoWidth, $maxLogoSize / $logoHeight);
-            $newLogoWidth = $logoWidth * $scale;
-            $newLogoHeight = $logoHeight * $scale;
-    
-            // Create a new image resource for the scaled logo
-            $scaledLogo = imagecreatetruecolor($newLogoWidth, $newLogoHeight);
-            imagealphablending($scaledLogo, false);
-            imagesavealpha($scaledLogo, true);
-            imagecopyresampled($scaledLogo, $logo, 0, 0, 0, 0, $newLogoWidth, $newLogoHeight, $logoWidth, $logoHeight);
-    
-            // Position the scaled logo in the center of the clear area
-            $logoX = $clearAreaX + ($clearAreaSize - $newLogoWidth) / 2;
-            $logoY = $clearAreaY + ($clearAreaSize - $newLogoHeight) / 2;
-    
-            // Merge the scaled logo onto the QR code
-            imagecopy($qrImageResource, $scaledLogo, $logoX, $logoY, 0, 0, $newLogoWidth, $newLogoHeight);
-    
-            // Clean up the scaled logo resource
-            imagedestroy($scaledLogo);
-        } else {
-            // Position the original logo in the center of the clear area
-            $logoX = $clearAreaX + ($clearAreaSize - $logoWidth) / 2;
-            $logoY = $clearAreaY + ($clearAreaSize - $logoHeight) / 2;
-    
-            // Merge the original logo onto the QR code
-            imagecopy($qrImageResource, $logo, $logoX, $logoY, 0, 0, $logoWidth, $logoHeight);
-        }
-    
-        // Save the QR code with the logo to a file
-        $filename = 'views/files/qrcodes/' . $id_holder . '.png';
-        imagepng($qrImageResource, $filename);
-    
-        // Clean up memory
-        imagedestroy($qrImageResource);
-        imagedestroy($logo);
+
+    $options = new QROptions([
+        'eccLevel' => QRCode::ECC_H,
+        'outputType' => QRCode::OUTPUT_IMAGE_PNG,
+        'imageBase64' => false,
+        'scale' => 10,
+    ]);
+
+    $qrcode = new QRCode($options);
+    $qrImage = $qrcode->render($id_holder);
+
+    $qrImageResource = imagecreatefromstring($qrImage);
+
+    $logo = imagecreatefrompng('views/img/JGC.png');
+
+    $qrWidth = imagesx($qrImageResource);
+    $qrHeight = imagesy($qrImageResource);
+
+    $logoWidth = imagesx($logo);
+    $logoHeight = imagesy($logo);
+
+    // Convert calculated sizes/positions to integers
+    $clearAreaSize = (int) round(min($qrWidth, $qrHeight) * 0.2);
+
+    $clearAreaX = (int) round(
+        ($qrWidth - $clearAreaSize) / 2
+    );
+
+    $clearAreaY = (int) round(
+        ($qrHeight - $clearAreaSize) / 2
+    );
+
+    $backgroundColor = imagecolorallocate(
+        $qrImageResource,
+        255,
+        255,
+        255
+    );
+
+    imagefilledrectangle(
+        $qrImageResource,
+        $clearAreaX,
+        $clearAreaY,
+        $clearAreaX + $clearAreaSize,
+        $clearAreaY + $clearAreaSize,
+        $backgroundColor
+    );
+
+    $maxLogoSize = $clearAreaSize * 0.8;
+
+    if (
+        $logoWidth > $maxLogoSize ||
+        $logoHeight > $maxLogoSize
+    ) {
+
+        $scale = min(
+            $maxLogoSize / $logoWidth,
+            $maxLogoSize / $logoHeight
+        );
+
+        $newLogoWidth = (int) round(
+            $logoWidth * $scale
+        );
+
+        $newLogoHeight = (int) round(
+            $logoHeight * $scale
+        );
+
+        $scaledLogo = imagecreatetruecolor(
+            $newLogoWidth,
+            $newLogoHeight
+        );
+
+        imagealphablending($scaledLogo, false);
+        imagesavealpha($scaledLogo, true);
+
+        imagecopyresampled(
+            $scaledLogo,
+            $logo,
+            0,
+            0,
+            0,
+            0,
+            $newLogoWidth,
+            $newLogoHeight,
+            $logoWidth,
+            $logoHeight
+        );
+
+        $logoX = (int) round(
+            $clearAreaX +
+            ($clearAreaSize - $newLogoWidth) / 2
+        );
+
+        $logoY = (int) round(
+            $clearAreaY +
+            ($clearAreaSize - $newLogoHeight) / 2
+        );
+
+        imagecopy(
+            $qrImageResource,
+            $scaledLogo,
+            $logoX,
+            $logoY,
+            0,
+            0,
+            $newLogoWidth,
+            $newLogoHeight
+        );
+
+        imagedestroy($scaledLogo);
+
+    } else {
+
+        $logoX = (int) round(
+            $clearAreaX +
+            ($clearAreaSize - $logoWidth) / 2
+        );
+
+        $logoY = (int) round(
+            $clearAreaY +
+            ($clearAreaSize - $logoHeight) / 2
+        );
+
+        imagecopy(
+            $qrImageResource,
+            $logo,
+            $logoX,
+            $logoY,
+            0,
+            0,
+            $logoWidth,
+            $logoHeight
+        );
     }
+
+    $filename =
+        'views/files/qrcodes/' .
+        $id_holder .
+        '.png';
+
+    imagepng(
+        $qrImageResource,
+        $filename
+    );
+
+    imagedestroy($qrImageResource);
+    imagedestroy($logo);
+}
     static public function ctrAddItem(){
         // Check if the form was submitted with either type
         if (isset($_POST['addItem']) || isset($_POST['addUnregisterItem'])) {
@@ -509,18 +585,18 @@ class ControllerQRCode{
     }
             // Display success or error message
             if ($answer == "ok") {
-                // echo '<script>
-                //     swal({
-                //         type: "success",
-                //         title: "Records have been successfully added!",
-                //         showConfirmButton: true,
-                //         confirmButtonText: "Ok"
-                //     }).then(function(result) {
-                //         if (result.value) {
-                //             window.location = "inventory";
-                //         }
-                //     });
-                // </script>';
+                echo '<script>
+                    swal({
+                        type: "success",
+                        title: "Records have been successfully added!",
+                        showConfirmButton: true,
+                        confirmButtonText: "Ok"
+                    }).then(function(result) {
+                        if (result.value) {
+                            window.location = "inventory";
+                        }
+                    });
+                </script>';
             }else if($answer == "error"){
                 $errorMessage = htmlspecialchars($answer);
                 echo '<script>
