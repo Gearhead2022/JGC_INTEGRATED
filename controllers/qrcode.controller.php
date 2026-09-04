@@ -509,18 +509,18 @@ class ControllerQRCode{
     }
             // Display success or error message
             if ($answer == "ok") {
-                echo '<script>
-                    swal({
-                        type: "success",
-                        title: "Records have been successfully added!",
-                        showConfirmButton: true,
-                        confirmButtonText: "Ok"
-                    }).then(function(result) {
-                        if (result.value) {
-                            window.location = "inventory";
-                        }
-                    });
-                </script>';
+                // echo '<script>
+                //     swal({
+                //         type: "success",
+                //         title: "Records have been successfully added!",
+                //         showConfirmButton: true,
+                //         confirmButtonText: "Ok"
+                //     }).then(function(result) {
+                //         if (result.value) {
+                //             window.location = "inventory";
+                //         }
+                //     });
+                // </script>';
             }else if($answer == "error"){
                 $errorMessage = htmlspecialchars($answer);
                 echo '<script>
