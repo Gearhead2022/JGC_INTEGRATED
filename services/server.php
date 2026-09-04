@@ -115,7 +115,7 @@ $loop = Factory::create();
 $webSocket = new WsServer(new WebSocketServer());
 $http = new HttpServer($webSocket);
 // Create a ReactPHP socket server that listens on port 8080
-$socketServer = new ReactServer('0.0.0.0:9000', $loop); // Bind to all network interfaces
+$socketServer = new ReactServer('0.0.0.0:8102', $loop); // Bind to all network interfaces
 // Create the IoServer to run the WebSocket over the HTTP server
 $server = new IoServer($http, $socketServer, $loop);
 

@@ -97,7 +97,7 @@
         let conn;
         let isWebSocketOpen = false;
         function initializeWebSocket() {
-            conn = new WebSocket('wss://jgcintegratedsystems.com/ws/');  // Use your local IP address
+            conn = new WebSocket('wss://test.misprojectsimulation.online/ws/');  // Use your local IP address
             conn.onopen = function() {
                 isWebSocketOpen = true;
                 console.log('WebSocket connection opened');
