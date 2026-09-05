@@ -71,7 +71,7 @@
           
         });
     // Create a WebSocket connection
-    conn = new WebSocket('wss://test.misprojectsimulation.online/ws/');  // Use your local IP address
+    conn = new WebSocket('wss://jgcintegratedsystems.com/ws/');  // Use your local IP address
     // Listen for incoming messages
     conn.onmessage = function(event) {
     const response = JSON.parse(event.data);
