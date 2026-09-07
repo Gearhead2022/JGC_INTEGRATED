@@ -24,7 +24,12 @@ RUN pecl install dbase-7.1.1 \
 
 RUN printf "display_errors=Off\n\
 log_errors=On\n\
-error_reporting=E_ALL & ~E_DEPRECATED & ~E_NOTICE\n" \
+error_reporting=E_ALL & ~E_DEPRECATED & ~E_NOTICE\n\
+upload_max_filesize=200M\n\
+post_max_size=220M\n\
+memory_limit=512M\n\
+max_execution_time=300\n\
+max_input_time=300\n" \
 > /usr/local/etc/php/conf.d/app.ini
 
 RUN a2enmod rewrite
