@@ -28,8 +28,8 @@ error_reporting=E_ALL & ~E_DEPRECATED & ~E_NOTICE\n\
 upload_max_filesize=200M\n\
 post_max_size=220M\n\
 memory_limit=512M\n\
-max_execution_time=300\n\
-max_input_time=300\n" \
+max_execution_time=600\n\
+max_input_time=600\n" \
 > /usr/local/etc/php/conf.d/app.ini
 
 RUN a2enmod rewrite
