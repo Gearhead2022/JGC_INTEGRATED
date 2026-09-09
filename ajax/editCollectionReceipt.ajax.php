@@ -4,11 +4,12 @@ require_once "../models/operation.model.php";
 require_once "../controllers/orprinting.controller.php";
 require_once "../models/orprinting.model.php";
 require_once "../views/modules/session.php";
-$editAccntModal= new editPinModal();
-$editAccntModal->showEditPinModal();    
 
-class editPinModal {
-    public function showEditPinModal() {
+$editBIRRECModal= new editBIRRECModal();
+$editBIRRECModal->showEditBIRRECModal();    
+
+class editBIRRECModal {
+    public function showEditBIRRECModal() {
 
         if (isset($_GET['account_id'])) {
           
@@ -17,9 +18,11 @@ class editPinModal {
             $account_id = '';
         }
  
-        if (isset($_GET['cdate'])) {
-          
-            $collDate = date("Y-m-d", strtotime($_GET['cdate']));
+       if (isset($_GET['cdate']) && $_GET['cdate'] != '') {
+            $collDate = date(
+                'Y-m-d',
+                strtotime($_GET['cdate'])
+            );
         } else {
             $collDate = '';
         }

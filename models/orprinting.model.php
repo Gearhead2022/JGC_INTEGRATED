@@ -2,12 +2,10 @@
 require_once "connection.php";
 class ModelORPrinting{
 
-	static public function 
-	
-	
-	mdlAddCollectionRecords($data){
+	static public function mdlAddCollectionRecords($data){
 		$stmt = (new Connection)->connect()->prepare("INSERT INTO `sspclct` (cdate, account_id, batch, mntheff, amount, posted, collstat, bankno,
-        balterm, atmbal, branch_name) VALUES (:cdate, :account_id, :batch, :mntheff, :amount, :posted, :collstat, :bankno, :balterm, :atmbal, :branch_name)");
+        balterm, atmbal, name, bank, target, normal, actpnsn, effective, branch_name) VALUES (:cdate, :account_id, :batch, :mntheff, :amount, 
+		:posted, :collstat, :bankno, :balterm, :atmbal, :name, :bank, :target, :normal, :actpnsn, :effective, :branch_name)");
 		
 		$stmt->bindParam(":cdate", $data["cdate"], PDO::PARAM_STR);
 		$stmt->bindParam(":account_id", $data["account_id"], PDO::PARAM_STR);
@@ -19,6 +17,14 @@ class ModelORPrinting{
         $stmt->bindParam(":bankno", $data["bankno"], PDO::PARAM_STR);
         $stmt->bindParam(":balterm", $data["balterm"], PDO::PARAM_INT);
         $stmt->bindParam(":atmbal", $data["atmbal"], PDO::PARAM_STR);
+
+		$stmt->bindParam(":name", $data["name"], PDO::PARAM_STR);
+		$stmt->bindParam(":bank", $data["bank"], PDO::PARAM_STR);
+		$stmt->bindParam(":target", $data["target"], PDO::PARAM_STR);
+		$stmt->bindParam(":normal", $data["normal"], PDO::PARAM_STR);
+		$stmt->bindParam(":actpnsn", $data["actpnsn"], PDO::PARAM_STR);
+		$stmt->bindParam(":effective", $data["effective"], PDO::PARAM_STR);
+
 		$stmt->bindParam(":branch_name", $data["branch_name"], PDO::PARAM_STR);
 
 		if($stmt->execute()){
@@ -32,24 +38,8 @@ class ModelORPrinting{
 
 	}	
 
-    static public function mdlCheckCollectionDuplication($collDate, $branch_name){
+	static public function mdlGetCollectionRecords($collDate, $branch_name){
         $stmt = (new Connection)->connect()->prepare("SELECT * FROM `sspclct` WHERE cdate = '$collDate' AND branch_name = '$branch_name'");
-		$stmt -> execute();
-		return $stmt -> fetchAll();
-		$stmt -> close();
-		$stmt = null;
-	}
-
-    static public function mdlGetCollectionRecords($collDate, $branch_name){
-        $stmt = (new Connection)->connect()->prepare("SELECT * FROM `sspclct` WHERE cdate = '$collDate' AND branch_name = '$branch_name'");
-		$stmt -> execute();
-		return $stmt -> fetchAll();
-		$stmt -> close();
-		$stmt = null;
-	}
-
-	static public function mdlCheckCollectionReceiptDuplication($account_id, $collDate){
-        $stmt = (new Connection)->connect()->prepare("SELECT * FROM `birrec` WHERE account_id = '$account_id' AND tdate = '$collDate'");
 		$stmt -> execute();
 		return $stmt -> fetchAll();
 		$stmt -> close();
@@ -64,27 +54,6 @@ class ModelORPrinting{
 		$stmt = null;
 	}
 
-	static public function mdlAddTRy($data){
-		$stmt = (new Connection)->connect()->prepare("INSERT INTO `birrec` (account_id, name, bank, target, normal, actpnsn, amount) VALUES (:account_id, :name, :bank, :target, :normal, :actpnsn, :amount)");
-		
-		$stmt->bindParam(":account_id", $data["account_id"], PDO::PARAM_STR);
-		$stmt->bindParam(":name", $data["name"], PDO::PARAM_STR);
-		$stmt->bindParam(":bank", $data["bank"], PDO::PARAM_STR);
-		$stmt->bindParam(":target", $data["target"], PDO::PARAM_STR);
-		$stmt->bindParam(":normal", $data["normal"], PDO::PARAM_STR);
-        $stmt->bindParam(":actpnsn", $data["actpnsn"], PDO::PARAM_STR);
-        $stmt->bindParam(":amount", $data["amount"], PDO::PARAM_STR);
-
-		if($stmt->execute()){
-			return "ok";
-		}else{
-			return "error";
-		}
-
-		$stmt->close();
-		$stmt = null;
-
-	}	
     static public function mdlGetCLCTRecords($account_id, $collDate, $branch_name){
         $stmt = (new Connection)->connect()->prepare("SELECT * FROM `sspclct` WHERE account_id = $account_id AND cdate = '$collDate' AND branch_name = '$branch_name'");
 		$stmt -> execute();
@@ -184,15 +153,13 @@ class ModelORPrinting{
 	}
 
 	static public function mdlGetLastSavedId($collDate, $branch_name) {
-		$stmt = (new Connection)->connect()->prepare("SELECT account_id FROM `birrec` WHERE tdate = :collDate AND branch_name = '$branch_name' ORDER BY id DESC LIMIT 1");
+		$stmt = (new Connection)->connect()->prepare("SELECT account_id FROM `birrec` WHERE tdate = :collDate AND branch_name = '$branch_name' ORDER BY tdate DESC LIMIT 1");
 		
 		$stmt->bindParam(':collDate', $collDate, PDO::PARAM_STR);
 		
 		$stmt->execute();
 	
 		$result = $stmt->fetch(PDO::FETCH_ASSOC);
-	
-		$stmt->closeCursor(); // Close the cursor to enable the next query on this connection
 	
 		return $result;
 	}
@@ -210,14 +177,12 @@ class ModelORPrinting{
 	
 		$result = $stmt->fetch(PDO::FETCH_ASSOC);
 	
-		$stmt->closeCursor(); // Close the cursor to enable the next query on this connection
-	
 		return $result;
 	}
 
 	static public function mdlCheckIfRecordExist($account_id, $tdate, $branch_name){
 
-		$stmt = (new Connection)->connect()->prepare("SELECT * FROM `birrec` WHERE tdate = :tdate AND branch_name = :branch_name AND account_id = :account_id");
+		$stmt = (new Connection)->connect()->prepare("SELECT id FROM `birrec` WHERE tdate = :tdate AND branch_name = :branch_name AND account_id = :account_id");
 		$stmt ->bindParam(":account_id", $account_id, PDO::PARAM_STR);
 		$stmt ->bindParam(":tdate", $tdate, PDO::PARAM_STR);
 		$stmt ->bindParam(":branch_name", $branch_name, PDO::PARAM_STR);
@@ -230,10 +195,10 @@ class ModelORPrinting{
         }
 		$stmt -> close();
 		$stmt = null;
-	
 	}
 
-	//
+	
+ 	// added 11-22-23 //
 
 	static public function mdlDeleteBIRRECRecord($table, $data){
 		$stmt = (new Connection)->connect()->prepare("DELETE FROM $table WHERE account_id = :account_id AND tdate = :tdate");
@@ -258,6 +223,31 @@ class ModelORPrinting{
 		$stmt = null;
 	}
 
+	
+	// added 09-08-26
 
+	static public function mdlGetExistingBIRRecords($tdate, $branch_name)
+	{
+		$stmt = (new Connection)->connect()->prepare(" SELECT DISTINCT account_id FROM birrec WHERE tdate = :tdate AND branch_name = :branch_name");
+
+		$stmt->bindParam(":tdate", $tdate, PDO::PARAM_STR);
+		$stmt->bindParam(":branch_name", $branch_name, PDO::PARAM_STR);
+
+		$stmt->execute();
+
+		return $stmt->fetchAll(PDO::FETCH_COLUMN);
+	}
+
+	static public function mdlGetExistingCLCTRecords($collDate, $branch_name)
+	{
+		$stmt = (new Connection)->connect()->prepare(" SELECT account_id FROM sspclct WHERE cdate = :cdate AND branch_name = :branch_name");
+
+		$stmt->bindParam(":cdate", $collDate, PDO::PARAM_STR);
+		$stmt->bindParam(":branch_name", $branch_name, PDO::PARAM_STR);
+
+		$stmt->execute();
+
+		return $stmt->fetchAll(PDO::FETCH_COLUMN);
+	}
 
 }

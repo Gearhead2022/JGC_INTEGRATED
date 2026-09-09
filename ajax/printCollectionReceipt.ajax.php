@@ -4,11 +4,12 @@ require_once "../models/operation.model.php";
 require_once "../controllers/orprinting.controller.php";
 require_once "../models/orprinting.model.php";
 require_once "../views/modules/session.php";
-$editAccntModal= new editPinModal();
-$editAccntModal->showEditPinModal();    
 
-class editPinModal {
-    public function showEditPinModal() {
+$printRecord= new printBIRRECModal();
+$printRecord->showPrintBIRRECModal();    
+
+class printBIRRECModal {
+    public function showPrintBIRRECModal() {
 
         if (isset($_GET['account_id'])) {
           
@@ -17,13 +18,13 @@ class editPinModal {
             $account_id = '';
         }
  
-        if (isset($_GET['tdate'])) {
-          
-            $tdate = $_GET["tdate"];
-    
+         if (isset($_GET['tdate']) && $_GET['tdate'] != '') {
+            $tdate = date(
+                'Y-m-d',
+                strtotime($_GET['tdate'])
+            );
         } else {
             $tdate = '';
-
         }
 
         $branch_name = $_SESSION['branch_name'];

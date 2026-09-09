@@ -3,17 +3,20 @@ require_once "../controllers/orprinting.controller.php";
 require_once "../models/orprinting.model.php";
 require_once "../views/modules/session.php";
 
-	$activateClients = new pinRecords();
-	$activateClients -> showPinDataList();
+$activateList = new BIRRECRecords();
+$activateList -> showBIRRECDataList();
 
-class pinRecords{
-	public function showPinDataList(){
+class BIRRECRecords{
+	public function showBIRRECDataList(){
 
-        if (isset($_GET['collDate'])) {
-			$collDate = date('Y-m-d', strtotime($_GET['collDate']));
-		} else {
-			$collDate = '';
-		}
+        if (isset($_GET['collDate']) && $_GET['collDate'] != '') {
+            $collDate = date(
+                'Y-m-d',
+                strtotime($_GET['collDate'])
+            );
+        } else {
+            $collDate = '';
+        }
 
 		if ($_SESSION['branch_name'] != "") {
           
