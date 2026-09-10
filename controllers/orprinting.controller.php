@@ -1,16 +1,18 @@
 <?php
 
 
-class ControllerORPrinting{
-    
+class ControllerORPrinting
+{
+
     static public function ctrGetCollectionRecords($collDate, $branch_name)
     {
         $folderPaths = "../views/files/branchor/$branch_name/UPDTOR";
+        // $folderPaths = "C:/RECEIPT/UPDTOR";
         $file = $folderPaths . '.DBF';
 
         /*
-        * Open DBF
-        */
+         * Open DBF
+         */
         $dbf = dbase_open($file, 0);
 
         if ($dbf === false) {
@@ -42,7 +44,7 @@ class ControllerORPrinting{
 
         foreach ($existingAccountIds as $accountId) {
 
-            $accountId = trim((string)$accountId);
+            $accountId = trim((string) $accountId);
 
             if ($accountId !== '') {
                 $existingAccounts[$accountId] = true;
@@ -69,7 +71,7 @@ class ControllerORPrinting{
             }
 
 
-            $account_id = trim((string)$record['ID']);
+            $account_id = trim((string) $record['ID']);
 
             if ($account_id === '') {
                 continue;
@@ -81,28 +83,22 @@ class ControllerORPrinting{
 
             $cdate = $date;
 
-            $batch   = trim($record['BATCH']);
+            $batch = trim($record['BATCH']);
             $mntheff = trim($record['MNTHEFF']);
-            $amount  = $record['AMOUNT'];
+            $amount = $record['AMOUNT'];
 
-            $posted = (
-                strtoupper(trim($record['POSTED'])) === 'TRUE'
-            ) ? 'TRUE' : 'FALSE';
+            $posted = (strtoupper(trim($record['POSTED'])) === 'TRUE') ? 'TRUE' : 'FALSE';
 
-            $collstat = preg_replace(
-                '/[^a-zA-Z0-9\s]/',
-                '',
-                $record['COLLSTAT']
-            );
+            $collstat = preg_replace('/[^a-zA-Z0-9\s]/', '', $record['COLLSTAT']);
 
-            $bankno  = trim($record['BANKNO']);
+            $bankno = trim($record['BANKNO']);
             $balterm = trim($record['BALTERM']);
-            $atmbal  = trim($record['ATMBAL']);
+            $atmbal = trim($record['ATMBAL']);
 
-            $name    = trim($record['NAME']);
-            $bank    = trim($record['BANK']);
-            $target  = $record['COLLAMT'];
-            $normal  = $record['PENSION'];
+            $name = rtrim(str_replace('¥', 'Ñ', iconv('ISO-8859-1', 'UTF-8', $record['NAME'])));
+            $bank = trim($record['BANK']);
+            $target = $record['COLLAMT'];
+            $normal = $record['PENSION'];
             $actpnsn = $record['ACTPNSN'];
 
             $effective = date(
@@ -111,25 +107,25 @@ class ControllerORPrinting{
             );
 
             $data = [
-                "cdate"       => $cdate,
-                "account_id"  => $account_id,
-                "batch"       => $batch,
-                "mntheff"     => $mntheff,
-                "amount"      => $amount,
-                "posted"      => $posted,
-                "collstat"    => $collstat,
-                "bankno"      => $bankno,
-                "balterm"     => $balterm,
-                "atmbal"      => $atmbal,
+                "cdate" => $cdate,
+                "account_id" => $account_id,
+                "batch" => $batch,
+                "mntheff" => $mntheff,
+                "amount" => $amount,
+                "posted" => $posted,
+                "collstat" => $collstat,
+                "bankno" => $bankno,
+                "balterm" => $balterm,
+                "atmbal" => $atmbal,
                 "branch_name" => $branch_name,
 
-                "name"        => $name,
-                "bank"        => $bank,
-                "target"      => $target,
-                "normal"      => $normal,
-                "actpnsn"     => $actpnsn,
+                "name" => $name,
+                "bank" => $bank,
+                "target" => $target,
+                "normal" => $normal,
+                "actpnsn" => $actpnsn,
 
-                "effective"   => $effective
+                "effective" => $effective
             ];
 
             (new ModelORPrinting)->mdlAddCollectionRecords($data);
@@ -138,17 +134,18 @@ class ControllerORPrinting{
         }
 
         /*
-        * Close DBF
-        */
+         * Close DBF
+         */
         dbase_close($dbf);
 
         return (new ModelORPrinting)->mdlGetCollectionRecords($collDate, $branch_name);
     }
-    
-    
-    
 
-    public static function ctrGetCollectionInfo($account_id, $collDate, $branch_name) {
+
+
+
+    public static function ctrGetCollectionInfo($account_id, $collDate, $branch_name)
+    {
 
         $clct = (new ModelORPrinting)->mdlGetCLCTRecords($account_id, $collDate, $branch_name);
 
@@ -184,20 +181,22 @@ class ControllerORPrinting{
             "cdate" => $cdate,
             "effective" => $effective
         );
-            
+
         // Return the data as JSON
         return $data;
     }
 
-    static public function ctrAddBIRRECRecord($data){
+    static public function ctrAddBIRRECRecord($data)
+    {
         $table = "birrec";
         $answer = (new ModelORPrinting)->mdlAddBIRRECRecord($table, $data);
-        return $answer; 
+        return $answer;
     }
 
     // Convertion of numeric number to words //
 
-    static public function convertAmountToWords($amount) {
+    static public function convertAmountToWords($amount)
+    {
         $number = number_format($amount, 2, '.', '');
         $numArr = explode('.', $number);
 
@@ -216,7 +215,8 @@ class ControllerORPrinting{
         return implode(" and ", $words);
     }
 
-    private static function convertToWords($number) {
+    private static function convertToWords($number)
+    {
         $number = intval($number);
         $words = "";
         $units = ["", "THOUSAND", "MILLION", "BILLION", "TRILLION", "QUADRILLION"];
@@ -240,7 +240,8 @@ class ControllerORPrinting{
         return ($words !== "") ? $words : "ZERO";
     }
 
-    private static function convertThreeDigitNumberToWords($number) {
+    private static function convertThreeDigitNumberToWords($number)
+    {
         if ($number === '') {
             return ''; // or handle the case as needed
         }
@@ -254,9 +255,9 @@ class ControllerORPrinting{
         $digits = str_split(strrev($number));
 
         // Extract individual digits
-        $unit = (int)($digits[0] ?? 0);
-        $ten = (int)($digits[1] ?? 0);
-        $hundred = (int)($digits[2] ?? 0);
+        $unit = (int) ($digits[0] ?? 0);
+        $ten = (int) ($digits[1] ?? 0);
+        $hundred = (int) ($digits[2] ?? 0);
 
         if ($hundred > 0) {
             $words .= $ones[$hundred] . " HUNDRED ";
@@ -276,43 +277,50 @@ class ControllerORPrinting{
     }
 
 
-    static public function ctrGetAllCollectionReceiptList($collDate, $branch_name){
+    static public function ctrGetAllCollectionReceiptList($collDate, $branch_name)
+    {
         $answer = (new ModelORPrinting)->mdlGetAllCollectionReceiptList($collDate, $branch_name);
-        return $answer; 
+        return $answer;
 
     }
-    static public function ctrGetCollectionReceiptInfo($account_id, $tdate, $branch_name){
+    static public function ctrGetCollectionReceiptInfo($account_id, $tdate, $branch_name)
+    {
         $collDate = date("Y-m-d", strtotime($tdate));
 
         $answer = (new ModelORPrinting)->mdlGetCollectionReceiptInfo($account_id, $collDate, $branch_name);
-        return $answer; 
+        return $answer;
 
     }
 
-    static public function ctrGetLastSavedId($collDate, $branch_name){
+    static public function ctrGetLastSavedId($collDate, $branch_name)
+    {
         $answer = (new ModelORPrinting)->mdlGetLastSavedId($collDate, $branch_name);
-        return $answer; 
+        return $answer;
 
     }
 
-    static public function ctrGetIdDescription($account_id, $collDate, $branch_name){
+    static public function ctrGetIdDescription($account_id, $collDate, $branch_name)
+    {
         $answer = (new ModelORPrinting)->mdlGetIdDescription($account_id, $collDate, $branch_name);
-        return $answer; 
+        return $answer;
 
     }
 
- // added 11-22-23 //
+    // added 11-22-23 //
 
-static public function ctrDeleteBIRRECRecord(){
-    if(isset($_GET['account_id'])){
-        $table = "birrec";
-        $data = array("account_id"=>$_GET["account_id"],
-        "tdate"=>date("Y-m-d", strtotime($_GET["tdate"])));
+    static public function ctrDeleteBIRRECRecord()
+    {
+        if (isset($_GET['account_id'])) {
+            $table = "birrec";
+            $data = array(
+                "account_id" => $_GET["account_id"],
+                "tdate" => date("Y-m-d", strtotime($_GET["tdate"]))
+            );
 
-        $answer = (new ModelORPrinting)->mdlDeleteBIRRECRecord($table, $data);
-            if($answer == "ok"){
-                
-                echo'<script>
+            $answer = (new ModelORPrinting)->mdlDeleteBIRRECRecord($table, $data);
+            if ($answer == "ok") {
+
+                echo '<script>
                 swal({
                     type: "success",
                     title: "Record has been successfully deleted!",
@@ -325,8 +333,8 @@ static public function ctrDeleteBIRRECRecord(){
                         }
                     })
                 </script>';
-            }else if($answer == "error"){
-                echo'<script>
+            } else if ($answer == "error") {
+                echo '<script>
 
                 swal({
                     type: "warning",
@@ -341,37 +349,39 @@ static public function ctrDeleteBIRRECRecord(){
                     })
                 </script>';
 
-            }	
+            }
         }
     }
 
-    static public function ctrGetAllCollectionReceiptInfo($tdate, $branch_name){
+    static public function ctrGetAllCollectionReceiptInfo($tdate, $branch_name)
+    {
         $collDate = date("Y-m-d", strtotime($tdate));
-    
+
         $answer = (new ModelORPrinting)->mdlGetAllCollectionReceiptInfo($collDate, $branch_name);
-        return $answer; 
+        return $answer;
 
     }
 
-    static public function ctrUpdateFileRecords(){
-        if(isset($_POST["updateRecord"])){
+    static public function ctrUpdateFileRecords()
+    {
+        if (isset($_POST["updateRecord"])) {
             // $table = "branch_dtr_upload";
-    
+
             // Check if a file was uploaded
-            if(isset($_FILES["or_file"]) && $_FILES["or_file"]["error"] == 0){
+            if (isset($_FILES["or_file"]) && $_FILES["or_file"]["error"] == 0) {
                 $branch = $_POST["or_branch_name"];
 
                 $uploadDir = "views/files/branchor/$branch/";
 
                 // Check if the directory exists, create it if not
-                if(!is_dir($uploadDir)){
+                if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0777, true);
                 }
 
                 $uploadFile = $uploadDir . basename($_FILES["or_file"]["name"]);
-       
+
                 // Move the uploaded file to the specified directory
-                if(move_uploaded_file($_FILES["or_file"]["tmp_name"], $uploadFile)){
+                if (move_uploaded_file($_FILES["or_file"]["tmp_name"], $uploadFile)) {
                     // File uploaded successfully
                     echo '<script>
                         swal({
@@ -398,7 +408,7 @@ static public function ctrDeleteBIRRECRecord(){
                             });
                         </script>';
                 }
-  
+
             } else {
                 // No file uploaded
                 echo '<script>
@@ -411,5 +421,5 @@ static public function ctrDeleteBIRRECRecord(){
                       </script>';
             }
         }
-    } 	
+    }
 }

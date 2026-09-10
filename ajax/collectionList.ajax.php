@@ -30,7 +30,7 @@ class CLCTRecords
          * Get collection records
          */
         $List = (new ControllerORPrinting)->ctrGetCollectionRecords($collDate, $branch_name);
-       
+
         if (empty($List)) {
 
             header('Content-Type: application/json');
@@ -73,14 +73,14 @@ class CLCTRecords
                             title='Re-Edit'
                             class='btn btn-sm btn-danger waves-effect waves-light btnEditColl'
                             account_id='" . htmlspecialchars(
-                                $account_id,
-                                ENT_QUOTES,
-                                'UTF-8'
-                            ) . "'
+                    $account_id,
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) . "'
                             cdate='" . date(
-                                "Ymd",
-                                strtotime($cdate)
-                            ) . "'
+                    "Ymd",
+                    strtotime($cdate)
+                ) . "'
                         >
                             Re-Edit
                         </button>
@@ -97,14 +97,14 @@ class CLCTRecords
                             title='Edit'
                             class='btn btn-sm btn-info waves-effect waves-light btnEditColl'
                             account_id='" . htmlspecialchars(
-                                $account_id,
-                                ENT_QUOTES,
-                                'UTF-8'
-                            ) . "'
+                    $account_id,
+                    ENT_QUOTES,
+                    'UTF-8'
+                ) . "'
                             cdate='" . date(
-                                "Ymd",
-                                strtotime($cdate)
-                            ) . "'
+                    "Ymd",
+                    strtotime($cdate)
+                ) . "'
                         >
                             Edit
                         </button>
