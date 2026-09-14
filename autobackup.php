@@ -18,11 +18,11 @@ $backup_user = $_SESSION['branch_name'] ?? 'SYSTEM';
 //     exit('Unauthorized access');
 // }
 
-$host = 'localhost';
-$user = 'django_user';
-$pass = 'djangodbpass';
+$host = 'mysql';
+$user = 'jgc_user';
+$pass = '!Jgc@misSopware2026';
 
-$databases = ['emb_appform2', 'dtr_fr_db', 'jgc_dtr_db', 'nah_db', 'sgi_db', 'fleet_management'];
+$databases = ['emb_appform'];
 
 date_default_timezone_set('Asia/Manila');
 $year = date("Y");
@@ -56,7 +56,8 @@ foreach ($databases as $dbname) {
         $res = $mysqlConn->query("SELECT * FROM `$table`");
         while ($data = $res->fetch_assoc()) {
             $vals = array_map(function ($val) use ($mysqlConn) {
-    		return isset($val) ? "'" . $mysqlConn->real_escape_string($val) . "'" : "NULL";}, array_values($data));
+                return isset($val) ? "'" . $mysqlConn->real_escape_string($val) . "'" : "NULL";
+            }, array_values($data));
 
             $vals = array_map(function ($val) {
                 return isset($val) ? "'$val'" : "NULL";
@@ -74,7 +75,7 @@ foreach ($databases as $dbname) {
     $backup_at = date('Y-m-d');
     $time_at = date('h:i:s');
 
-	$conn = (new Connection)->connect();
+    $conn = (new Connection)->connect();
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     $sql = "SELECT data_id FROM data_backup_log WHERE backup_at = ? LIMIT 1";
@@ -91,7 +92,7 @@ foreach ($databases as $dbname) {
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-         if ($row && isset($row['data_id'])) {
+        if ($row && isset($row['data_id'])) {
             $pathToDelete = "{$row['file_path']}/{$row['database_name']}";
             $sql3 = "DELETE FROM data_backup_log WHERE data_id = '$data_id' AND database_name = '$db_name_now'";
             $stmt = $conn->prepare($sql3);
@@ -100,7 +101,7 @@ foreach ($databases as $dbname) {
             if (file_exists($pathToDelete)) {
                 unlink($pathToDelete);
             }
-        } 
+        }
     } else {
         $sql4 = "SELECT data_id FROM data_backup_log ORDER BY id DESC LIMIT 1";
         $stmt = $conn->prepare($sql4);
@@ -108,7 +109,7 @@ foreach ($databases as $dbname) {
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($row && isset($row['data_id'])) {
-            $lastNumeric = (int)substr($row['data_id'], 4);
+            $lastNumeric = (int) substr($row['data_id'], 4);
             $newNumeric = $lastNumeric + 1;
         } else {
             $newNumeric = 1;
@@ -122,7 +123,7 @@ foreach ($databases as $dbname) {
         $stmt = $conn->prepare("INSERT INTO data_backup_log 
             (data_id, database_name, file_name, file_path, created_by, backup_at, time_at, download_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-    
+
         $stmt->execute([
             $data_id,
             $dbname,
@@ -133,12 +134,12 @@ foreach ($databases as $dbname) {
             $time_at,
             null
         ]);
-    
+
         echo "✅ Log inserted: [$data_id, $dbname]<br><br>";
     } catch (PDOException $e) {
         echo "❌ Failed to insert log for $dbname: " . $e->getMessage() . "<br><br>";
     }
-    
+
 
 }
 
