@@ -193,89 +193,17 @@ class ControllerORPrinting
         return $answer;
     }
 
-    // Convertion of numeric number to words //
-
-    static public function convertAmountToWords($amount)
+    // Batch controller method:
+    static public function ctrBatchAddBIRRECRecords($records)
     {
-        $number = number_format($amount, 2, '.', '');
-        $numArr = explode('.', $number);
-
-        $wholeNumber = $numArr[0];
-        $decimalPart = isset($numArr[1]) ? $numArr[1] : '00';
-
-        $words = [];
-        $words[] = self::convertToWords($wholeNumber) . " PESOS";
-
-        if ($decimalPart !== '00') {
-            $words[] = self::convertToWords($decimalPart) . " CENTS";
-        } else {
-            $words[] = "ZERO CENTS";
+        $results = [];
+        $table = "birrec";
+        foreach ($records as $data) {
+            $results[] = (new ModelORPrinting)->mdlAddBIRRECRecord($table, $data);
         }
 
-        return implode(" and ", $words);
+        return $results;
     }
-
-    private static function convertToWords($number)
-    {
-        $number = intval($number);
-        $words = "";
-        $units = ["", "THOUSAND", "MILLION", "BILLION", "TRILLION", "QUADRILLION"];
-
-        $numLength = strlen($number);
-        $groups = floor(($numLength - 1) / 3) + 1;
-        $number = str_pad($number, $groups * 3, "0", STR_PAD_LEFT);
-
-        for ($i = 0; $i < $groups; $i++) {
-            $chunk = substr($number, $i * 3, 3);
-            $chunk = ltrim($chunk, "0");
-
-            if ($chunk !== "000") {
-                if ($words !== "") {
-                    $words .= " ";
-                }
-                $words .= self::convertThreeDigitNumberToWords($chunk) . " " . $units[$groups - $i - 1];
-            }
-        }
-
-        return ($words !== "") ? $words : "ZERO";
-    }
-
-    private static function convertThreeDigitNumberToWords($number)
-    {
-        if ($number === '') {
-            return ''; // or handle the case as needed
-        }
-
-        $words = "";
-        $ones = ["", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE"];
-        $teens = ["", "ELEVEN", "TWELVE", "THIRTEEN", "FOURTEEN", "FIFTEEN", "SIXTEEN", "SEVENTEEN", "EIGHTEEN", "NINETEEN"];
-        $tens = ["", "TEN", "TWENTY", "THIRTY", "FOURTY", "FIFTY", "SIXTY", "SEVENTY", "EIGHTY", "NINETY"];
-
-        // Split the number into individual digits
-        $digits = str_split(strrev($number));
-
-        // Extract individual digits
-        $unit = (int) ($digits[0] ?? 0);
-        $ten = (int) ($digits[1] ?? 0);
-        $hundred = (int) ($digits[2] ?? 0);
-
-        if ($hundred > 0) {
-            $words .= $ones[$hundred] . " HUNDRED ";
-        }
-
-        if ($ten > 0) {
-            if ($ten == 1) {
-                $words .= $teens[$unit] ?? "";
-            } else {
-                $words .= $tens[$ten] . " " . $ones[$unit] . " ";
-            }
-        } else {
-            $words .= $ones[$unit] . " ";
-        }
-
-        return trim($words);
-    }
-
 
     static public function ctrGetAllCollectionReceiptList($collDate, $branch_name)
     {

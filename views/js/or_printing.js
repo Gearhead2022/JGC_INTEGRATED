@@ -1,75 +1,6 @@
 
 $(document).ready(function () {
 
-  $(".generateList").on("click", function () {
-    var collDate = document.getElementById('collDate').value;
-
-    // Display loading screen
-    swal({
-      title: "Generating",
-      text: "Please wait...",
-      allowOutsideClick: false,
-      allowEscapeKey: false,
-      onOpen: () => {
-        swal.showLoading();
-      }
-    });
-
-    var table = $('.collectionDataList').DataTable();
-
-    // Clear the existing data
-    table.clear().draw();
-
-    $.ajax({
-      url: 'ajax/collectionList.ajax.php',
-      type: 'GET',
-      data: { collDate: collDate },
-      dataType: 'json',
-      success: function (data) {
-        swal.close();
-
-        if (data.data.length > 0) {
-          // Add new data to the table
-          table.rows.add(data.data).draw();
-        } else {
-          // Show a message or handle empty data as needed
-          swal({
-            type: "warning",
-            title: 'No Records Found in Coll. Date<u> ' + collDate + '</u>',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            cancelButtonText: 'cancel',
-            confirmButtonText: 'OK'
-          }).then(function (result) {
-            if (result.value) {
-
-            }
-
-          });
-        }
-      },
-      error: function () {
-        swal.close();
-        swal({
-          type: "warning",
-          title: 'No Records Found in Coll. Date<u> ' + collDate + '</u>',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          cancelButtonText: 'cancel',
-          confirmButtonText: 'OK'
-        }).then(function (result) {
-          if (result.value) {
-
-          }
-
-        });
-      }
-    });
-  });
-
-
   $(".collectionDataList").on("click", "tbody .btnEditColl", function () {
 
     var account_id = $(this).attr("account_id");
@@ -872,6 +803,8 @@ function convertThreeDigitNumberToWords(number) {
   return words.trim();
 }
 
+// Replaced and modified batch fill description
+
 $(".addBIRRECRecords").on("click", function (event) {
   event.preventDefault();
 
@@ -881,6 +814,8 @@ $(".addBIRRECRecords").on("click", function (event) {
   const account_id = $('#account_id').val();
   const cdate = $('#cdate').val();
   const branch_name = $('#branch_name').val();
+
+  const bank = $('#bank').val(); // Add bank to birrex
 
   const amtwrd = convertAmountToWords(amount);
   const vat = parseFloat(amount) * 0.12; // Example VAT calculation (12%)
@@ -903,44 +838,53 @@ $(".addBIRRECRecords").on("click", function (event) {
     "month": tdate.toLocaleString('default', { month: 'short' }),
     "day": ('0' + tdate.getDate()).slice(-2),
     "yr": tdate.getFullYear().toString().substr(-2),
-    "branch_name": branch_name
+    "branch_name": branch_name,
+    "bank": bank
   };
 
   $.ajax({
     type: "GET",
-    url: "ajax/addBIRCRecords.ajax.php", // Replace with your actual server endpoint
+    url: "ajax/addBIRCRecords.ajax.php",
     data: data,
     success: function (response) {
       console.log("Success:", response);
-      swal({
-        type: "success",
-        title: "Records Update Succesfully!",
-        showConfirmButton: true,
-        confirmButtonText: "Ok"
-      }).then(function (result) {
-        if (result.value) {
 
-          $('#editReceiptPrinting').modal('hide');
+      if (response === "ok") {
+        swal({
+          type: "success",
+          title: "Records Update Succesfully!",
+          showConfirmButton: true,
+          confirmButtonText: "Ok"
+        }).then(function (result) {
+          if (result.value) {
 
-          document.getElementById('yourFormId').reset();
+            $('#editReceiptPrinting').modal('hide');
 
-          // console.log("Account ID:", account_id);
+            document.getElementById('yourFormId').reset();
 
-          var $button = $("button[account_id='" + account_id + "']");
-          if ($button.length) {
-            // console.log("Button found:", $button);
+            var $button = $("button[account_id='" + account_id + "']");
 
-            $button.removeClass('btn-info').addClass('btn-danger').text('Re-Edit');
-          } else {
-            console.log("Button not found for account_id:", account_id);
+            if ($button.length) {
+              $button.removeClass('btn-info').addClass('btn-danger').text('Re-Edit');
+            } else {
+              console.log("Button not found for account_id:", account_id);
+            }
           }
-        }
-      });
+        });
+      } else {
+        swal({
+          type: "error",
+          title: "Error",
+          text: "An error occurred while adding the records."
+        });
+      }
     },
     error: function (xhr, status, error) {
       console.error("Error:", error);
+      console.error("AJAX Error:", error);
+      console.error("Server Response:", xhr.responseText);
       swal({
-        type: "success",
+        type: "error",
         title: "An error occurred while adding the record.",
         showConfirmButton: true,
         confirmButtonText: "Ok"
@@ -955,7 +899,425 @@ $(".addBIRRECRecords").on("click", function (event) {
   });
 });
 
+// OR PRINTING AUTO FILL DESCRIPTION
+
+// 0 checkbox
+// 1 action
+// 2 cdate
+// 3 account_id
+// 4 name
+// 5 mntheff
+// 6 amount
+// 7 posted
+// 8 collstat
+// 9 bankno
+// 10 balterm
+// 11 atmbal
+
+let selectedCollections = new Map();
+
+
+// ========================================
+// SELECT ALL BUTTON
+// ========================================
+$('#btnSelectAllCollections').on('click', function () {
+
+  const table = $('.collectionDataList').DataTable();
+
+  // Determine whether we're selecting or deselecting everything
+  const selectAll = selectedCollections.size !== table.rows().count();
+
+  table.rows().every(function () {
+
+    const data = this.data();
+
+    const accountId = data[3];
+    const name = data[4];
+    const amount = data[6];
+    const cdate = data[2];
+    const bank = data[9];
+
+    if (selectAll) {
+      selectedCollections.set(accountId, {
+        account_id: accountId,
+        name: name,
+        amount: amount,
+        cdate: cdate,
+        bank: bank
+      });
+
+      // console.log("selectedCollections:", selectedCollections);
+    } else {
+      selectedCollections.delete(accountId);
+    }
+  });
+
+  // Redraw current page so checkbox states are updated
+  table.draw(false);
+
+  $('#selectAllCollections').prop('checked', selectAll);
+
+  $(this).find('span').text(selectAll ? 'DESELECT ALL' : 'SELECT ALL');
+
+  updateSelectedCount();
+});
+
+
+// ========================================
+// INDIVIDUAL CHECKBOX
+// ========================================
+$(document).on('change', '.collectionRowCheckbox', function () {
+
+  const accountId = $(this).data('account-id');
+
+  if (this.checked) {
+    selectedCollections.set(accountId, {
+      account_id: accountId,
+      name: $(this).data('name'),
+      amount: $(this).data('amount'),
+      cdate: $(this).data('cdate'),
+      bank: $(this).data('bank')
+    });
+  } else {
+    selectedCollections.delete(accountId);
+  }
+
+  updateSelectedCount();
+
+  const table = $('.collectionDataList').DataTable();
+
+  const total = table.rows().count();
+
+  const allSelected =
+    total > 0 &&
+    selectedCollections.size === total;
+
+  $('#selectAllCollections').prop('checked', allSelected);
+
+  $('#btnSelectAllCollections').find('span').text(allSelected ? 'DESELECT ALL' : 'SELECT ALL');
+});
+
+
+// ========================================
+// HEADER CHECKBOX
+// ========================================
+$('#selectAllCollections').on('change', function () {
+
+  const checked = this.checked;
+
+  const table = $('.collectionDataList').DataTable();
+
+  table.rows().every(function () {
+
+    const data = this.data();
+    const accountId = data[3];
+
+    if (checked) {
+
+      selectedCollections.set(accountId, {
+        account_id: accountId,
+        name: data[4],
+        amount: data[6],
+        cdate: data[2],
+        bank: data[9]
+      });
+
+      // console.log("selectedCollections:", selectedCollections);
+
+    } else {
+
+      selectedCollections.delete(accountId);
+    }
+  });
+
+  table.draw(false);
+
+  $('#btnSelectAllCollections').find('span').text(checked ? 'DESELECT ALL' : 'SELECT ALL');
+
+  updateSelectedCount();
+});
+
+
+// ========================================
+// RESTORE CHECKBOXES AFTER DATATABLE DRAW
+// ========================================
+$('.collectionDataList').on('draw.dt', function () {
+
+  const table = $(this).DataTable();
+
+  table.rows({ page: 'current' }).every(function () {
+
+    const data = this.data();
+    const accountId = data[3];
+
+    $(this.node())
+      .find('.collectionRowCheckbox')
+      .prop(
+        'checked',
+        selectedCollections.has(accountId)
+      );
+  });
+});
+
+
+// ========================================
+// UPDATE SELECTED COUNT
+// ========================================
+function updateSelectedCount() {
+
+  const count = selectedCollections.size;
+
+  $('#selectedCollectionCount').text(
+    count + ' SELECTED'
+  );
+}
+
+
+$(".batchFillDescription").on("click", function (event) {
+
+  event.preventDefault();
+
+  if (selectedCollections.size === 0) {
+
+    swal({
+      type: "warning",
+      title: "No Records Selected",
+      text: "Please select at least one record."
+    });
+
+    return;
+  }
+
+  const description = $("#batchDescription").val();
+
+  // if (!description || description.trim() === "") {
+
+  //   swal({
+  //     type: "warning",
+  //     title: "Description Required",
+  //     text: "Please enter a description."
+  //   });
+
+  //   return;
+  // }
+
+  const branch_name = $(this).data("branch-name-fill");
+
+  const records = [];
+
+  selectedCollections.forEach(function (record) {
+
+    const name = record.name;
+    const amount = record.amount;
+    const account_id = record.account_id;
+    const cdate = record.cdate;
+    const bank = record.bank;
+
+    const amtwrd = convertAmountToWords(amount);
+    const vat = parseFloat(amount) * 0.12;
+    const tdate = new Date(cdate);
+    const rdate = new Date();
+    const ttime = rdate.toLocaleTimeString('en-US', { hour12: true });
+
+    if (isNaN(tdate.getTime())) {
+      console.error("Invalid collection date:", cdate, record);
+
+      swal({
+        type: "error",
+        title: "Invalid Collection Date",
+        text: "Invalid date found for account " + account_id + "."
+      });
+
+      return;
+    }
+
+    // console.log("cdate:", cdate);
+    // console.log("tdate:", tdate.toISOString().split('T')[0]);
+    // console.log("valid:", !isNaN(tdate.getTime()));
+
+    records.push({
+      "rdate": rdate.toISOString().split('T')[0],
+      "name": name,
+      "amtwrd": amtwrd,
+      "amount": amount,
+      "birsales": "----",
+      "biramt": vat.toFixed(2),
+      "birdue": amount,
+      "tdate": tdate.toISOString().split('T')[0],
+      "ttime": ttime,
+      "desc": description ?? '',
+      "account_id": account_id,
+      "month": tdate.toLocaleString('default', { month: 'short' }),
+      "day": ('0' + tdate.getDate()).slice(-2),
+      "yr": tdate.getFullYear().toString().substr(-2),
+      "branch_name": branch_name,
+      "bank": bank
+    });
+
+  });
+
+  swal({
+    title: "Submitting",
+    text: "Please wait...",
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    onOpen: () => {
+      swal.showLoading();
+    }
+  });
+
+  // console.log("BIRREC batch:", records);
+
+  $.ajax({
+    type: "POST",
+    url: "ajax/batchAddBIRRecords.ajax.php",
+
+    data: {
+      records: JSON.stringify(records)
+    },
+
+    success: function (response) {
+
+      swal.close();
+
+      if (response === "ok") {
+
+        swal({
+          type: "success",
+          title: "Records Updated Successfully!",
+          text: records.length + " records processed.",
+          showConfirmButton: true,
+          confirmButtonText: "OK"
+        }).then(function () {
+
+          // Change all selected rows from Edit -> Re-Edit
+          selectedCollections.forEach(function (record) {
+
+            var $button = $("button[account_id='" + record.account_id + "']");
+
+            if ($button.length) {
+              $button
+                .removeClass('btn-info')
+                .addClass('btn-danger')
+                .text('Re-Edit');
+            }
+
+          });
+
+          // Clear selections
+          selectedCollections.clear();
+
+          updateSelectedCount();
+
+          $("#selectAllCollections").prop("checked", false);
+
+          $("#btnSelectAllCollections").find("span").text("SELECT ALL");
+
+          // Redraw table
+          $(".collectionDataList").DataTable().draw(false);
+
+        });
+
+      } else {
+
+        swal({
+          type: "error",
+          title: "Error",
+          text: "An error occurred while adding the records."
+        });
+
+      }
+    },
+
+    error: function (xhr, status, error) {
+      swal.close();
+      console.error("Batch error:", error);
+
+      swal({
+        type: "error",
+        title: "Error",
+        text: "An error occurred while adding the records."
+      });
+    }
+  });
+
+});
 
 
 
 
+
+
+
+$(".generateList").on("click", function () {
+  var collDate = document.getElementById('collDate').value;
+
+  // Display loading screen
+  swal({
+    title: "Generating",
+    text: "Please wait...",
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    onOpen: () => {
+      swal.showLoading();
+    }
+  });
+
+  var table = $('.collectionDataList').DataTable();
+
+  table.clear().draw();
+
+  $('#selectAllCollections').prop('checked', false);
+
+  $('#btnSelectAllCollections').find('span').text('SELECT ALL');
+
+  updateSelectedCount();
+
+  $.ajax({
+    url: 'ajax/collectionList.ajax.php',
+    type: 'GET',
+    data: { collDate: collDate },
+    dataType: 'json',
+    success: function (data) {
+      swal.close();
+
+      if (data.data.length > 0) {
+        // Add new data to the table
+        table.rows.add(data.data).draw();
+      } else {
+        // Show a message or handle empty data as needed
+        swal({
+          type: "warning",
+          title: 'No Records Found in Coll. Date<u> ' + collDate + '</u>',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          cancelButtonText: 'cancel',
+          confirmButtonText: 'OK'
+        }).then(function (result) {
+          if (result.value) {
+
+          }
+
+        });
+      }
+    },
+    error: function () {
+      swal.close();
+      swal({
+        type: "warning",
+        title: 'No Records Found in Coll. Date<u> ' + collDate + '</u>',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        cancelButtonText: 'cancel',
+        confirmButtonText: 'OK'
+      }).then(function (result) {
+        if (result.value) {
+
+        }
+
+      });
+    }
+  });
+});

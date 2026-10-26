@@ -1,7 +1,7 @@
 <?php
-require __DIR__ . '/../vendor/autoload.php';// Autoload Composer dependencies
-use chillerlan\QRCode\QRCode;
-use chillerlan\QRCode\QROptions;
+// require __DIR__ . '/../vendor/autoload.php';// Autoload Composer dependencies
+// use chillerlan\QRCode\QRCode;
+// use chillerlan\QRCode\QROptions;
 class ControllerQRCode
 {
 

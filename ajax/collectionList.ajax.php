@@ -72,16 +72,7 @@ class CLCTRecords
                             data-placement='top'
                             title='Re-Edit'
                             class='btn btn-sm btn-danger waves-effect waves-light btnEditColl'
-                            account_id='" . htmlspecialchars(
-                    $account_id,
-                    ENT_QUOTES,
-                    'UTF-8'
-                ) . "'
-                            cdate='" . date(
-                    "Ymd",
-                    strtotime($cdate)
-                ) . "'
-                        >
+                            account_id='" . htmlspecialchars($account_id, ENT_QUOTES, 'UTF-8') . "'cdate='" . date("Ymd", strtotime($cdate)) . "'>
                             Re-Edit
                         </button>
                     </div>
@@ -96,15 +87,8 @@ class CLCTRecords
                             data-placement='top'
                             title='Edit'
                             class='btn btn-sm btn-info waves-effect waves-light btnEditColl'
-                            account_id='" . htmlspecialchars(
-                    $account_id,
-                    ENT_QUOTES,
-                    'UTF-8'
-                ) . "'
-                            cdate='" . date(
-                    "Ymd",
-                    strtotime($cdate)
-                ) . "'
+                            account_id='" . htmlspecialchars($account_id, ENT_QUOTES, 'UTF-8') . "'
+                            cdate='" . date("Ymd", strtotime($cdate)) . "'
                         >
                             Edit
                         </button>
@@ -112,7 +96,21 @@ class CLCTRecords
                 ";
             }
 
+            $checkbox = "
+                <input
+                    type='checkbox'
+                    class='collectionRowCheckbox'
+                    value='" . htmlspecialchars($account_id, ENT_QUOTES, 'UTF-8') . "'
+                    data-account-id='" . htmlspecialchars($account_id, ENT_QUOTES, 'UTF-8') . "'
+                    data-name='" . htmlspecialchars($row["name"], ENT_QUOTES, 'UTF-8') . "'
+                    data-amount='" . htmlspecialchars($row["amount"], ENT_QUOTES, 'UTF-8') . "'
+                    data-cdate='" . htmlspecialchars($row["cdate"], ENT_QUOTES, 'UTF-8') . "'
+                    data-bank='" . htmlspecialchars($row["bank"], ENT_QUOTES, 'UTF-8') . "'
+                >
+            ";
+
             $data[] = [
+                $checkbox,
                 $buttons,
                 $row["cdate"],
                 $row["account_id"],
@@ -126,7 +124,7 @@ class CLCTRecords
                 ),
                 $row["posted"],
                 $row["collstat"],
-                $row["bankno"],
+                $row["bank"],
                 $row["balterm"],
                 number_format(
                     $row["atmbal"],
